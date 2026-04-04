@@ -9,7 +9,9 @@ import { DashboardPage } from './pages/DashboardPage';
 import { NotificationsPage } from './pages/NotificationsPage'
 import DropdownTextField from './components/DropdownTextField';
 
-// Optional: Custom theme to fine-tune responsiveness
+import { LogTest } from './tests/LogTest';
+import { StockMovementPage } from './pages/StockMovementPage';
+
 const theme = createTheme({
   palette: {
     mode: 'light',
@@ -28,7 +30,20 @@ const App: React.FC = () => {
           <Route path="/login" element={<AuthPage type="Login" />} />
           <Route path="/signup" element={<AuthPage type="Signup" />} />
 
+
+
+
+
+          {/* Test */}
           <Route path="/drop-text" element={<DropdownTextField />} />
+          <Route path="/test" element={<LogTest />} />
+          <Route path="/movement" element={<StockMovementPage />} />
+
+
+
+
+
+
 
           {/* Protected Routes (Wrapped in Layout) */}
           <Route
@@ -42,32 +57,17 @@ const App: React.FC = () => {
             }
           />
           
-          <Route
-            path="/dashboard"
-            element={
-              <Layout>
-                <DashboardPage />
-              </Layout>
-            }
-          />
+          <Route path="/dashboard" element={
+              <Layout><DashboardPage /></Layout>
+            } />
 
-          <Route
-            path="/notifications"
-            element={
-              <Layout>
-                <NotificationsPage />
-              </Layout>
-            }
-          />
+          <Route path="/notifications" element={
+              <Layout><NotificationsPage /> </Layout>
+            } />
           
-          <Route
-            path="/reports"
-            element={
-              <Layout>
-                <ReportPage />
-              </Layout>
-            }
-          />
+          <Route path="/reports" element={
+              <Layout><ReportPage /></Layout>
+            } />
 
           {/* Fallback for 404s */}
           <Route path="*" element={<Navigate to="/login" />} />

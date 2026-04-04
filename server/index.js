@@ -3,26 +3,24 @@ const cors = require('cors');
 const database = require('./database');
 
 const app = express();
+app.use(express.json());
 
-// const userRoutes = require('./users/userRoutes');
-// const stockRoutes = require('./stocks/stockRoutes');
+// ----------------------------
+
+const userRoutes = require('./routes/userRoutes');
+userRoutes.setPool(database.pool);
+app.use('/users', userRoutes);
+
+// ----------------------------
 
 app.use(cors({
-    origin: 'http://localhost:5173', // Replace with your frontend URL
+    origin: 'http://localhost:5173',
     methods: ['GET', 'POST'],
     credentials: true
 }));
 
-app.use(express.json());
 
-// userRoutes.setPool(database.pool);
-// stockRoutes.setPool(database.pool);
-
-
-app.use('/users', userRoutes);
-app.use('/stocks', stockRoutes);
-
-const PORT = 3000;
+const PORT = 1337;
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });
