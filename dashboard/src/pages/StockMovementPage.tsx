@@ -1,30 +1,107 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { 
 Box, Button, Dialog, DialogTitle, 
-DialogContent, DialogActions, TextField, Stack, Paper,
+DialogContent, DialogActions, Stack, Paper,
 Table, TableBody, TableCell, TableContainer, TableRow,
 useMediaQuery,
 } from '@mui/material';
+import { Document } from 'flexsearch';
+import FlexSearch from "flexsearch";
+
 import { post } from '../components/api';
 
 import AddIcon from "@mui/icons-material/Add";
+import SearchField from '../components/SearchField';
 import IncrementField from '../components/IncrementField';
+
+type Product = {
+  ProductId: number;
+  ProductName: string;
+  Quantity: string;
+}
 
 export const StockMovementPage = () => {
   const [open, setOpen] = useState(false);
   const [newItem, setNewItem] = useState({ name: '', quantity: '' });
+  const [products, setProducts] = useState<Product[]>([]);
 
+  // const index = new Document<Product>({
+  //   document: { id: "ProductId", index: ["ProductName", "Quantity"] },
+  //   tokenize: "forward", context: true,
+  // });
 
-  async function sendTest() {
-    const response = await post('/users/test', {
+  const index = new FlexSearch.Document<Product>({
+    document: {
+    id: "ProductId",
+    index: [{
+      field: "ProductName",
+      tokenize: "forward", // important for prefix matching
+      encode: "default", // case insensitive
+      resolution: 9,
+    },],
+  }});
+
+  
+  async function updateData() {
+    const response = await post('/stocks/get-products', {
         activity: 'Inventory',
     });
 
-    // Object.keys(response[0][0]).forEach(function(k){
-    // alert(k + ' - ' + response[0][k]);
-// });
+    //alert(response[0][0].Quantity);
+
+    // Object.keys(response[0][0]).forEach(
+    //   function(k) {
+    //     alert(k + ' - ' + response[0][k]);
+    // });
+
+
+
+    // response[0].forEach(
+    //   (item: Product) => index.add(item)
+    // );
+
+    // response[0].forEach((item: { ProductId: any; ProductName: string; })  => {
+    //   index.add({
+    //     id: item.ProductId,
+    //     name: item.ProductName.toLowerCase(), // normalize to lowercase
+    //   });
+    // });
+
+
+    setProducts(response[0]);
   }
   
+
+  useEffect(() => {
+    updateData();
+  }, [index]);
+
+
+
+
+
+  // const index: Document<Product> = useMemo(() => {
+  //     document: {
+  //       id: "ProductId",
+  //       index: ["ProductName", "Quantity"],
+  //       // store: true,
+  //     },
+  //     tokenize: "forward",
+  //     context: true,
+  //   }, []);
+
+  // const index: Document<Product> = useMemo(() => {
+  //   return new (Document as any)({
+  //     document: {
+  //       id: "ProductId",
+  //       index: ["ProductName", "Quantity"],
+  //       store: true, 
+  //     },
+  //     tokenize: "forward",
+  //     context: true,
+  //   });
+  // }, []);
+
   const handleOpen = () => setOpen(true);
 
   const handleClose = () => {
@@ -38,19 +115,6 @@ export const StockMovementPage = () => {
     handleClose();
   };
 
-  const [data, setData] = useState([
-    { name: 'Widget A', quantity: '50' },
-    { name: 'Widget B', quantity: '50' },
-    { name: 'Widget B', quantity: '50' },
-    { name: 'Widget B', quantity: '50' },
-    { name: 'Widget B', quantity: '50' },
-    { name: 'Widget B', quantity: '50' },
-    { name: 'Widget B', quantity: '50' },
-    { name: 'Widget B', quantity: '50' },
-    { name: 'Widget B', quantity: '50' },
-    { name: 'Widget B', quantity: '50' },
-    { name: 'Widget B', quantity: '50' },
-  ]);
 
 
 
@@ -104,18 +168,18 @@ export const StockMovementPage = () => {
       <Table aria-label="responsive table">
 
         <TableBody>
-          {data.map((row, index) => (
+          {products.map((product, index) => (
             <TableRow hover key={index}>
               <TableCell align="left">
-                {row.name}
+                {product.ProductName}
               </TableCell>
               <TableCell align="right">
                 <IncrementField max={50}
-                  value={row.quantity.toString()}
+                  value={product.Quantity.toString()}
                   setValue={(val) => (
-                    setData((prevData) => {
+                    setProducts((prevData) => {
                       const newData = [...prevData];
-                      newData[index].quantity = val;
+                      newData[index].Quantity = val;
                       return newData;
                     }
                   ))} />
@@ -150,14 +214,7 @@ export const StockMovementPage = () => {
         <DialogTitle>Add New Item</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField
-              autoFocus
-              label="Item Name"
-              fullWidth
-              variant="outlined"
-              value={newItem.name}
-              onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-            />
+            <SearchField index={index}/>
             <Stack direction="row" justifyContent="center">
               <IncrementField normalSize max={50000}
                 value={newItem.quantity.toString()}

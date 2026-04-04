@@ -13,6 +13,25 @@ VALUES ('Receive');
 /* =================================================== */
 
 DELIMITER //
+CREATE PROCEDURE GetEmptyProducts()
+BEGIN
+	SELECT ProductId, ProductName, 0 AS Quantity from product;
+END //
+DELIMITER ;
+
+
+
+
+
+
+
+
+
+
+
+/* =================================================== */
+
+DELIMITER //
 CREATE PROCEDURE CreateActivity
 (
 	IN StaffID INT,

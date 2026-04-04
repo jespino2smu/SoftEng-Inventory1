@@ -6,10 +6,14 @@ const app = express();
 app.use(express.json());
 
 // ----------------------------
-
 const userRoutes = require('./routes/userRoutes');
 userRoutes.setPool(database.pool);
 app.use('/users', userRoutes);
+
+// ----------------------------
+const stockRoutes = require('./routes/stockRoutes');
+stockRoutes.setPool(database.pool);
+app.use('/stocks', stockRoutes);
 
 // ----------------------------
 
