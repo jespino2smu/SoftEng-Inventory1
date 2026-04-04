@@ -15,7 +15,7 @@ VALUES ('Receive');
 DELIMITER //
 CREATE PROCEDURE GetEmptyProducts()
 BEGIN
-	SELECT ProductId, ProductName, 0 AS Quantity from product;
+	SELECT ProductId, ProductName AS Name, 0 AS Quantity from product;
 END //
 DELIMITER ;
 

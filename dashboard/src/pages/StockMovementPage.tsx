@@ -1,47 +1,44 @@
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from "react";
 import { 
 Box, Button, Dialog, DialogTitle, 
 DialogContent, DialogActions, Stack, Paper,
 Table, TableBody, TableCell, TableContainer, TableRow,
 useMediaQuery,
 } from '@mui/material';
-import { Document } from 'flexsearch';
-import FlexSearch from "flexsearch";
 
 import { post } from '../components/api';
 
+import { type Product} from '../types/Product';
+
+import { SearchField } from "../components/SearchField";
 import AddIcon from "@mui/icons-material/Add";
-import SearchField from '../components/SearchField';
 import IncrementField from '../components/IncrementField';
 
-type Product = {
-  ProductId: number;
-  ProductName: string;
-  Quantity: string;
-}
 
-export const StockMovementPage = () => {
+export const StockMovementPage: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [newItem, setNewItem] = useState({ name: '', quantity: '' });
   const [products, setProducts] = useState<Product[]>([]);
+  const [productSuggestions, setProductSuggestions] = useState<Product[]>([]);
 
-  // const index = new Document<Product>({
-  //   document: { id: "ProductId", index: ["ProductName", "Quantity"] },
-  //   tokenize: "forward", context: true,
-  // });
+  const [currentProduct, setCurrentProduct] = useState<Product>({
+    ProductId: 0,
+    Name: '',
+    Quantity: '',
+  });
 
-  const index = new FlexSearch.Document<Product>({
-    document: {
-    id: "ProductId",
-    index: [{
-      field: "ProductName",
-      tokenize: "forward", // important for prefix matching
-      encode: "default", // case insensitive
-      resolution: 9,
-    },],
-  }});
 
-  
+//   const [items, setItems] = useState<Item[]>([
+//     { ProductId: 1, ProductName: "Apple Pie",},
+//     { ProductId: 2, ProductName: "Banana Bread"},
+//     { ProductId: 3, ProductName: "Cherry Tart"},
+//     { ProductId: 4, ProductName: "Blueberry Muffin"},
+//   ]);
+
+
+  useEffect(() => {
+    updateData();
+  }, []);
+
   async function updateData() {
     const response = await post('/stocks/get-products', {
         activity: 'Inventory',
@@ -67,53 +64,65 @@ export const StockMovementPage = () => {
     //   });
     // });
 
-
-    setProducts(response[0]);
+    setProductSuggestions(response[0]);
   }
-  
 
-  useEffect(() => {
-    updateData();
-  }, [index]);
-
-
-
-
-
-  // const index: Document<Product> = useMemo(() => {
-  //     document: {
-  //       id: "ProductId",
-  //       index: ["ProductName", "Quantity"],
-  //       // store: true,
-  //     },
-  //     tokenize: "forward",
-  //     context: true,
-  //   }, []);
-
-  // const index: Document<Product> = useMemo(() => {
-  //   return new (Document as any)({
-  //     document: {
-  //       id: "ProductId",
-  //       index: ["ProductName", "Quantity"],
-  //       store: true, 
-  //     },
-  //     tokenize: "forward",
-  //     context: true,
-  //   });
-  // }, []);
 
   const handleOpen = () => setOpen(true);
 
   const handleClose = () => {
     setOpen(false);
-    setNewItem({ name: '', quantity: '' }); // Reset form on close
+    setCurrentProduct({
+        ProductId: 0,
+        Name: '',
+        Quantity: '',
+    });
   };
 
   const handleAdd = () => {
-    console.log("Adding Item:", newItem);
-    // Here you would typically update your data state or call an API
+    //console.log("Adding Item:", newItem);
+
+
+    setProducts(prev => {
+        const exists = prev.some(product => product.ProductId === currentProduct.ProductId);
+
+        if (exists) {
+
+        return prev.map(product =>
+            product.ProductId === currentProduct.ProductId?
+            { ...product, ...currentProduct }
+            : product
+        );
+        } else {
+            return [...prev, currentProduct];
+        }
+  });
+
+
+
+
+
+
+
     handleClose();
   };
+
+  function handleSearchSuggestionClick(id: number, name: string) {
+    setCurrentProduct(prev => ({
+      ...prev,
+      ProductId: id,
+      Name: name
+    }));
+  }
+
+
+
+
+
+
+
+
+
 
 
 
@@ -171,7 +180,7 @@ export const StockMovementPage = () => {
           {products.map((product, index) => (
             <TableRow hover key={index}>
               <TableCell align="left">
-                {product.ProductName}
+                {product.Name}
               </TableCell>
               <TableCell align="right">
                 <IncrementField max={50}
@@ -210,16 +219,31 @@ export const StockMovementPage = () => {
         open={open}
         onClose={handleClose}
         fullWidth
-        maxWidth="xs">
-        <DialogTitle>Add New Item</DialogTitle>
+        maxWidth="xs"
+        PaperProps={{
+          sx: {
+            position: "absolute",
+            top: 20,
+            margin: 0
+          }
+        }}
+        
+        >
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
-            <SearchField index={index}/>
+
+            <SearchField
+                data={productSuggestions}
+                onSuggestionPicked={handleSearchSuggestionClick}/>
+
             <Stack direction="row" justifyContent="center">
               <IncrementField normalSize max={50000}
-                value={newItem.quantity.toString()}
-                setValue={(val) => setNewItem({ ...newItem, quantity: val })} />
+                value={currentProduct.Quantity}
+                setValue={(val) => setCurrentProduct({
+                    ...currentProduct,
+                    Quantity: val })} />
             </Stack>
+
           </Stack>
         </DialogContent>
         <DialogActions sx={{ width: "100%" }}>
@@ -233,7 +257,7 @@ export const StockMovementPage = () => {
               }}
             onClick={handleAdd} 
             variant="contained" 
-            disabled={!newItem.name || !newItem.quantity}
+            disabled={!currentProduct.Quantity}
           >
             Add Item
           </Button>

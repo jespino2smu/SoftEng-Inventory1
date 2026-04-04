@@ -1,98 +1,110 @@
-import { useState, useMemo, useEffect } from 'react';
-import { Autocomplete, TextField, CircularProgress, Box } from '@mui/material';
+import React, { useState, useEffect } from "react";
+import { TextField, Autocomplete, InputAdornment, useMediaQuery } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 
-import FlexSearch from "flexsearch";
-import type { FlexSearchResult } from '../types/FlexSearchResult'
+import { Document } from "flexsearch";
 
+import { type Product } from '../types/Product';
 
-type Product = {
-  ProductId: number;
-  ProductName: string;
-  Quantity: string;
-};
+// Create a FlexSearch Document index
+const index = new Document<{
+    ProductId: number;
+    Name: string;
+  }>({
+  document: {
+    id: "ProductId",
+    index: ["Name"],
+    store: ["ProductId", "Name"],
+  },
+  preset: "match",
+  tokenize: "forward",
+  encode: (str: string) => str.toLowerCase().split(/\s+/),
+});
 
-interface SearchFieldProps {
-  index: FlexSearch.Document<Product>;
+interface SearchComponentProps {
+  data: Product[];
+  onSuggestionPicked: (id: number, name: string) => void;
 }
 
-const SearchField: React.FC<SearchFieldProps> = ({index}) => {
-  const [open, setOpen] = useState(false);
+export const SearchField: React.FC<SearchComponentProps> = ({ data, onSuggestionPicked }) => {
   const [options, setOptions] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [inputValue, setInputValue] = useState("");
 
-//   const search = (query: string): Product[] => {
-//     if (!query.trim()) return [];
+  useEffect(() => {
+    const existingIds = data.map((item) => item.ProductId);
+    existingIds.forEach((id) => index.remove(id));
 
-//     const tokens = query.toLowerCase().trim().split(/\s+/);
-//     let results: number[] = [];
+    data.forEach((item) => index.add(item));
+  }, [data, index]);
 
-//     tokens.forEach((token, i) => {
-//       const tokenResults = index.search(token, { field: "name", suggest: true });
-//       const ids = tokenResults.flatMap((r) => r.result as number[]);
+  useEffect(() => {
+    if (inputValue) {
+      const results = index.search(inputValue, { enrich: true });
 
-//       if (i === 0) {
-//         results = ids;
-//       } else {
-//         // AND logic: keep only IDs that appear in all token searches
-//         results = results.filter((id) => ids.includes(id));
-//       }
-//   });
-
-//   // Map back to full objects
-//   return results.map((id) => data.find((d) => d.id === id)!);
-// };
+      const flattened = results.flatMap((r) => r.result.map((doc: any) => doc.doc));
+      setOptions(flattened);
+    } else {
+      setOptions([]);
+    }
+  }, [inputValue, index]);
 
 
 
 
-
+  
   return (
-    <Box sx={{ width: 400, p: 4 }}>
-      <Autocomplete
-        open={open}
-        onOpen={() => setOpen(true)}
-        onClose={() => setOpen(false)}
-        options={options}
-        loading={loading}
-        getOptionLabel={(option) => option.ProductName}
-        filterOptions={(x) => x} 
-        // onInputChange={(_, value) => handleSearch(value)}
+    <Autocomplete
+      freeSolo
+      options={options}
+      getOptionLabel={(option) =>
+        typeof option === "string" ? option : option.Name
+      }
+      inputValue={inputValue}
+      onInputChange={(event, newInputValue) => setInputValue(newInputValue) }
+      onChange={(event, value) => {
+        if (value && typeof value !== "string") {
+          onSuggestionPicked(value.ProductId, value.Name);
+          // alert(`ID: ${value.ProductId}\nName: ${value.Name}`);
+        }
+      }}
 
-        onChange={(event, newValue: Product | null) => {
-          if (newValue) {
-            alert(`Selected Product ID: ${newValue.ProductId}\nQuantity: ${newValue.Quantity}`);
-          }
+      slotProps={{
+        listbox : {
+          style: {
+            maxHeight: useMediaQuery("(orientation: portrait)")?
+            '75vh' : '62vh',
+            overflowY: "auto",
+          },
+        }
+      }}
+
+      popupIcon={null}
+
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label="Search"
           
-        }}
+          variant="outlined"
 
-        isOptionEqualToValue={(option, value) => option.ProductId === value.ProductId}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Search (e.g. 'blue shirt')"
-            variant="outlined"
-            InputProps={{
+          slotProps={{
+            input: {
               ...params.InputProps,
-              endAdornment: (
+
+              startAdornment: (
                 <>
-                  {loading ? <CircularProgress color="inherit" size={20} /> : null}
-                  {params.InputProps.endAdornment}
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+
+                  {params.InputProps.startAdornment}
                 </>
               ),
-            }}
-          />
-        )}
-        renderOption={(props, option) => (
-          <li {...props} key={option.ProductId}>
-            <Box>
-              {option.ProductName}
-              <Box component="span" sx={{ display: 'block', fontSize: '0.75rem', color: 'gray' }}>
-              </Box>
-            </Box>
-          </li>
-        )}
-      />
-    </Box>
+            }
+          }}
+        />
+      )}
+    />
   );
 };
 
