@@ -11,6 +11,7 @@ import DropdownTextField from './components/DropdownTextField';
 
 import { LogTest } from './tests/LogTest';
 import { StockMovementPage } from './pages/StockMovementPage';
+import SearchField from './tests/SearchTest';
 
 const theme = createTheme({
   palette: {
@@ -38,6 +39,7 @@ const App: React.FC = () => {
           <Route path="/drop-text" element={<DropdownTextField />} />
           <Route path="/test" element={<LogTest />} />
           <Route path="/movement" element={<StockMovementPage />} />
+          <Route path="/search" element={<SearchField />} />
 
 
 
