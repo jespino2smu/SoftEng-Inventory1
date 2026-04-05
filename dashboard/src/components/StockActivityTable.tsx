@@ -4,6 +4,7 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Box,
   Stack,
+  List, ListItem, ListItemIcon, ListItemText
 } from '@mui/material';
 
 interface DataRow {
@@ -42,7 +43,6 @@ export const StockActivityTable: React.FC<DataTableProps> = ({ rows }) => {
             <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
               <strong>ID</strong>
             </TableCell> */}
-            <TableCell align="right"><strong>Qty</strong></TableCell>
             <TableCell align="left"><strong>Products</strong></TableCell>
             <TableCell align="center"><strong>Staff</strong></TableCell>
             {/* Hide ID column on extra-small screens */ }
@@ -54,17 +54,27 @@ export const StockActivityTable: React.FC<DataTableProps> = ({ rows }) => {
         <TableBody>
           {rows.map((row) => (
             <TableRow key={row.ActivityId} hover>
-              <TableCell align="right" sx={{ verticalAlign: 'top' }}>
-                {row.Products.map((product: any, index) => (
-                  <div key={`${row.ActivityId}-${index}`}>
-                    {product.Quantity}
-                  </div>))}
-              </TableCell>
-              <TableCell sx={{ verticalAlign: 'top' }}>
-                {row.Products.map((product: any, index) => (
-                  <div key={`${row.ActivityId}-${index}`}>
-                    &times; {product.ProductName}
-                  </div>))}
+              <TableCell sx={{ verticalAlign: 'top',}}>
+
+
+  {row.Products.map((product: any, index) => (
+    <Box sx={{
+        backgroundColor: 'red',
+        width: 'fit-Content',
+  display: 'grid',
+  gridTemplateColumns: '1fr 24px 1fr',
+  alignItems: 'start',
+  columnGap: 1,
+}}>
+    <Box textAlign="right" sx={{width: '5px',}}>{product.Quantity}</Box>
+    <Box textAlign="center" sx={{width: '8px',}}>&times;</Box>
+    <Box  sx={{width: '120px',}}>{product.ProductName}</Box>
+</Box>
+  ))}
+
+
+
+
               </TableCell>
               
             <TableCell sx={{ verticalAlign: 'top' }}>
