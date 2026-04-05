@@ -10,7 +10,6 @@ VALUES ('Receive');
     SELECT LAST_INSERT_ID()
     INTO ActivityID;
 
-/* =================================================== */
 
 
 
@@ -21,8 +20,3 @@ VALUES ('Receive');
 
 
 
-
-
-
-
-CALL CreateActivity('Receive');

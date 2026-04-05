@@ -8,5 +8,7 @@ module.exports.setPool = function(pool) {
     stockController.pool = pool;
 };
 router.post('/get-products', stockController.getProducts);
-
 router.post('/add-activity', stockController.addActivity);
+router.post('/get-stock-activities', stockController.getStockActivities);
+
+

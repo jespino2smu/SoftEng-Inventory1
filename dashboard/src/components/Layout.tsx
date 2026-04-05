@@ -41,7 +41,6 @@ const navItems = [
 
   return (
     <>
-    {/* Should be "!M XOR (M XOR H)"" */}
     <Box sx={{ display: 'flex' }}>
       <AppBar position="fixed" sx={{ zIndex: theme.zIndex.drawer + 1 }}>
         <Toolbar>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { 
   Box, Typography, TextField, InputAdornment, 
   Dialog, DialogTitle, DialogContent, IconButton
@@ -6,14 +6,35 @@ import {
 import { Search as SearchIcon, Close as CloseIcon } from '@mui/icons-material';
 import { DataTable } from '../components/DataTable';
 
+import { post } from '../components/api';
+
 export const ReportPage = () => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [stockActivities, setStockActivities] = useState([]);
 
   const reportData = [
     { id: 5001, name: 'Q1 Inventory', quantity: 1400 },
     { id: 5002, name: 'Q2 Inventory', quantity: 2100 },
   ];
+  
+  useEffect(() => {
+    getStockActivities();
+  }, []);
+  
+  async function getStockActivities() {
+      const result = await post('/stocks/get-stock-activities', {});
+
+      // let readActivities: string = "";
+      // result.forEach((item: any) => {
+      //   readActivities += `[${item.ActivityId}] ${item.ActivityType} - ${item.Date}\n`
+      //   item.Products.forEach((product: any) => {
+      //     readActivities += `     ${product.Quantity} x [${product.ProductName}]\n`;
+      //   })
+      //   readActivities += `\n`
+      // })
+      // alert(readActivities);
+  }
 
   return (
     <Box>

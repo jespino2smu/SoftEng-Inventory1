@@ -168,6 +168,45 @@ BEGIN
     VALUES (ActivityId, ProductId, Quantity);
 END //
 DELIMITER ;
+/* =================================================== */
+
+DELIMITER //
+CREATE PROCEDURE GetMinMaxStockActivitiesId()
+BEGIN
+	SELECT MIN(ActivityId) AS min, MAX(ActivityId) AS max
+	FROM handled_stock
+	LIMIT 1;
+END //
+DELIMITER ;
+
+CALL GetMinMaxStockActivitiesId();
+/* ================ */
+DELIMITER //
+CREATE PROCEDURE GetStockActivities()
+BEGIN
+	SELECT ActivityId, ActivityType, Date FROM stock_activity;
+END //
+DELIMITER ;
+
+CALL GetStockActivities();
+
+DELIMITER //
+CREATE PROCEDURE GetHandledStocks(IN UserId INT)
+BEGIN
+	SELECT S.ActivityId, S.ProductId, P.ProductName, S.Quantity, C.Name AS category
+	FROM handled_stock AS S
+	LEFT JOIN product AS P
+		ON S.ProductId = P.ProductId
+	LEFT JOIN usage_category AS C
+	ON C.UsageId = P.UsageId
+    ORDER BY S.ActivityId DESC
+    LIMIT 10;
+    
+    CALL AuditLog(UserId, 'Handled_Stock', -1, 'Viewed handled stocks}');
+END //
+DELIMITER ;
+
+-- CALL GetHandledStocks(1);
 
 /* ===================================================
 
@@ -197,6 +236,7 @@ VALUES (1, 'Ingredient');
 -- Test Products
 CALL AddProduct(0, 1, 'Caramel Syrup', 10);
 CALL AddProduct(0, 1, 'Vanilla Syrup', 15);
+CALL AddProduct(0, 1, 'Mocha Syrup', 15);
 CALL AddProduct(0, 1, 'Coffee Syrup', 15);
 CALL AddProduct(0, 1, 'Hazelnut Syrup', 15);
 CALL AddProduct(0, 1, 'Salted Caramel Syrup', 15);
