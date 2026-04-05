@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import Layout from './components/Layout';
@@ -20,6 +20,8 @@ const theme = createTheme({
 });
 
 const App: React.FC = () => {
+  const [visibleLayout, setVisibleLayout] = useState<boolean>(false);
+  
   return (
     <ThemeProvider theme={theme}>
       {/* CssBaseline kicks off MUI's CSS reset for consistent rendering across browsers */}
@@ -58,7 +60,8 @@ const App: React.FC = () => {
           />
           
           <Route path="/dashboard" element={
-              <Layout><DashboardPage /></Layout>
+              <Layout visibility={visibleLayout}><DashboardPage/></Layout>
+              // <Layout visibility={visibleLayout}><DashboardPage setLayoutVisibility={setVisibleLayout}/></Layout>
             } />
 
           <Route path="/notifications" element={

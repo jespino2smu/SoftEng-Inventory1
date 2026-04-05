@@ -12,11 +12,12 @@ import {
 
 import { useNavigate } from 'react-router-dom';
 
-const drawerWidth = 240;
+
+  const drawerWidth = 240;
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const theme = useTheme();
   const navigate = useNavigate();
+  const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   // State for the Mobile Dropdown Menu
@@ -39,6 +40,8 @@ const navItems = [
 ];
 
   return (
+    <>
+    {/* Should be "!M XOR (M XOR H)"" */}
     <Box sx={{ display: 'flex' }}>
       <AppBar position="fixed" sx={{ zIndex: theme.zIndex.drawer + 1 }}>
         <Toolbar>
@@ -114,6 +117,7 @@ const navItems = [
         {children}
       </Box>
     </Box>
+    </>
   );
 };
 

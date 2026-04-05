@@ -7,7 +7,7 @@ export async function post<TRequest = any, TResponse = any>(
     data: TRequest
 ): Promise<TResponse> {
 
-    localStorage.setItem("userID", JSON.stringify(1));
+    localStorage.setItem("userID", JSON.stringify(2));
 
     const userId = localStorage.getItem("userID");
 

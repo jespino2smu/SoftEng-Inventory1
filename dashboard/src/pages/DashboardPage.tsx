@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, type SetStateAction } from 'react';
 import { 
   Box, Typography, Button, Dialog, DialogTitle, 
   DialogContent, DialogActions, TextField, Stack, 
@@ -18,7 +18,9 @@ import type {Product} from '../types/Product';
 
 type Movement = "None" | "Receive" | "Dispatch" | "Inventory";
 
-
+// interface DashboardPageType {
+//    setLayoutVisibility?: React.Dispatch<React.SetStateAction<boolean>>;
+// }
 export const DashboardPage = () => {
   const [stockMovement, setStockMovement] = useState<Movement>("None");
 
@@ -41,14 +43,42 @@ export const DashboardPage = () => {
       sm: '18px'
   }};
 
-  function onSubmit() {
-    if (stockMovement === "Dispatch") {
-      addActivity(stockMovement, dispatchStocks);
-    } else if (stockMovement === "Inventory") {
-      addActivity(stockMovement, stockInventory);
-    } else if (stockMovement === "Receive") {
-      addActivity(stockMovement, receiveStocks);
+
+  // useEffect(() => {
+  //   if (
+  //     stockMovement === "Receive" ||
+  //      stockMovement === "Dispatch" || 
+  //      stockMovement ==="Inventory"
+  //   ) {
+  //     setLayoutVisibility?.(true);
+  //   } else {
+      
+  //   }
+  // }, [stockMovement]);
+
+
+  function onSubmit(movement: Movement) {
+    if (movement === "Dispatch") {
+      addActivity(movement, dispatchStocks);
+      setDispatchStocks([]);
+      setDisplayDispatchStocks(false);
+    } else if (movement === "Inventory") {
+      addActivity(movement, stockInventory);
+      setDisplayStockInventory(false);
+      setStockInventory([]);
+    } else if (movement === "Receive") {
+      addActivity(movement, receiveStocks);
+      setDisplayReceiveStocks(false);
+      setReceiveStocks([]);
     }
+  }
+
+  function onReturn() {
+    // setLayoutVisibility?.(false);
+    setDisplayDispatchStocks(false);
+    setDisplayStockInventory(false);
+    setDisplayReceiveStocks(false);
+    setStockMovement("None");
   }
 
   async function addActivity(movement: string, stocks: Product[]) {
@@ -58,27 +88,36 @@ export const DashboardPage = () => {
       });
   }
 
+  
   function togglePage(movement: Movement) {
     switch (movement) {
       case "Dispatch":
+        //setLayoutVisibility?.(true);
+
         setStockMovement(movement);
         setDisplayDispatchStocks(true);
         setDisplayStockInventory(false);
         setDisplayReceiveStocks(false);
         break;
       case "Inventory":
+        //setLayoutVisibility?.(true);
+
         setStockMovement(movement);
         setDisplayDispatchStocks(false);
         setDisplayStockInventory(true);
         setDisplayReceiveStocks(false);
         break;
       case "Receive":
+        //setLayoutVisibility?.(true);
+
         setStockMovement(movement);
         setDisplayDispatchStocks(false);
         setDisplayStockInventory(false);
         setDisplayReceiveStocks(true);
         break;
       default:
+        // setLayoutVisibility?.(false);
+
         setStockMovement(movement);
         setDisplayDispatchStocks(false);
         setDisplayStockInventory(false);
@@ -93,21 +132,24 @@ export const DashboardPage = () => {
           submitLabel='Receive'
           data={receiveStocks}
           setData={setReceiveStocks}
-          onSubmit={onSubmit} />
+          onSubmit={() => onSubmit("Receive")}
+          onReturn={onReturn} />
           
         <StockMovementPage
           display={displayStockInventory}
           submitLabel='Confirm Inventory'
           data={stockInventory}
           setData={setStockInventory}
-          onSubmit={onSubmit} />
+          onSubmit={() => onSubmit("Inventory")}
+          onReturn={onReturn} />
 
         <StockMovementPage
           display={displayDispatchStocks}
           submitLabel='Dispatch'
           data={dispatchStocks}
           setData={setDispatchStocks}
-          onSubmit={onSubmit} />
+          onSubmit={() => onSubmit("Dispatch")}
+          onReturn={onReturn} />
 
         <Box sx={{ 
         display: 'flex', 
@@ -116,10 +158,10 @@ export const DashboardPage = () => {
         alignItems: 'center', 
       }}>
 
-    {stockMovement === 'None'&&
+    {stockMovement === 'None' &&
         <Stack spacing={'20px'} sx={{marginTop: '10px'}}>
           <Button variant="contained"
-            onClick={() => togglePage("Receive")}>
+            onClick={() => {togglePage("Receive");}}>
             <Receive style={buttonIcon} />
             <Typography
               sx={buttonText}>Receive Stocks

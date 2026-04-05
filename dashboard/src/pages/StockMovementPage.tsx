@@ -7,6 +7,7 @@ DialogContent, DialogActions, Stack, Paper,
 Table, TableBody, TableCell, TableContainer, TableRow,
 useMediaQuery,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 import { post } from '../components/api';
 
@@ -23,12 +24,16 @@ interface StockMovementProps {
   setData: Dispatch<SetStateAction<Product[]>>;
   submitLabel: string;
   onSubmit: () => void;
+  onReturn: () => void;
 }
 
-const StockMovementPage = ({display, data, setData, submitLabel, onSubmit}: StockMovementProps) => {
+const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onReturn}: StockMovementProps) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   const [open, setOpen] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState<Product[]>([]);
-
+  
   const [currentProduct, setCurrentProduct] = useState<Product>({
     ProductId: 0,
     Name: '',
@@ -165,8 +170,12 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit}: Stoc
           </Button>
 
           <Button variant="contained"
+            onClick={() =>{
+              onReturn();
+            }}
             sx={{
-            }}>Test
+              backgroundColor: '#acacac'
+            }}>Back
           </Button>
         </Stack>
         }
@@ -174,7 +183,8 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit}: Stoc
         <TableContainer
           component={Paper}
           sx={{
-            maxHeight: 'calc(100vh - 90px)',
+            minHeight: isMobile? 'calc(100vh - 90px)' : 'calc(100vh - 200px)',
+            maxHeight: isMobile? 'calc(100vh - 90px)' : 'calc(100vh - 200px)',
             width: '100%',
             overflow: 'auto' }}>
           <Table aria-label="responsive table">
