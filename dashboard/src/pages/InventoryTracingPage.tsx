@@ -4,19 +4,15 @@ import {
   Dialog, DialogTitle, DialogContent, IconButton
 } from '@mui/material';
 import { Search as SearchIcon, Close as CloseIcon } from '@mui/icons-material';
-import { DataTable } from '../components/DataTable';
+import { StockActivityTable } from '../components/StockActivityTable';
 
 import { post } from '../components/api';
 
-export const ReportPage = () => {
+export const InventoryTracingPage = () => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [stockActivities, setStockActivities] = useState([]);
 
-  const reportData = [
-    { id: 5001, name: 'Q1 Inventory', quantity: 1400 },
-    { id: 5002, name: 'Q2 Inventory', quantity: 2100 },
-  ];
   
   useEffect(() => {
     getStockActivities();
@@ -24,7 +20,8 @@ export const ReportPage = () => {
   
   async function getStockActivities() {
       const result = await post('/stocks/get-stock-activities', {});
-
+      setStockActivities(result);
+      
       // let readActivities: string = "";
       // result.forEach((item: any) => {
       //   readActivities += `[${item.ActivityId}] ${item.ActivityType} - ${item.Date}\n`
@@ -38,7 +35,7 @@ export const ReportPage = () => {
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>Reports</Typography>
+      <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>Inventory Tracing</Typography>
       
       <TextField
         fullWidth
@@ -55,7 +52,7 @@ export const ReportPage = () => {
         }}
       />
 
-      <DataTable rows={reportData} />
+      <StockActivityTable rows={stockActivities} />
 
       {/* Search Dialog */}
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">

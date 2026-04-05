@@ -184,11 +184,29 @@ CALL GetMinMaxStockActivitiesId();
 DELIMITER //
 CREATE PROCEDURE GetStockActivities()
 BEGIN
-	SELECT ActivityId, ActivityType, Date FROM stock_activity;
+	SELECT ActivityId, ActivityType, Date FROM stock_activity
+    ORDER BY ActivityId DESC;
 END //
 DELIMITER ;
 
-CALL GetStockActivities();
+-- CALL GetStockActivities();
+
+/* ================ */
+
+DELIMITER //
+CREATE PROCEDURE GetHandlingStaff()
+BEGIN
+	SELECT H.ActivityId, H.StaffId, CONCAT(U.LastName, ', ', U.FirstName) AS Staff
+	FROM handling_staff AS H
+	LEFT JOIN staff AS U
+	ON H.StaffId = U.StaffId
+    ORDER BY H.ActivityId DESC;
+END //
+DELIMITER ;
+
+-- CALL GetHandlingStaff();
+
+/* ================ */
 
 DELIMITER //
 CREATE PROCEDURE GetHandledStocks(IN UserId INT)

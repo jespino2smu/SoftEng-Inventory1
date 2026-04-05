@@ -4,7 +4,7 @@ import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import Layout from './components/Layout';
 
 import { AuthPage } from './pages/AuthPage';
-import { ReportPage } from './pages/ReportPage';
+import { InventoryTracingPage } from './pages/InventoryTracingPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { NotificationsPage } from './pages/NotificationsPage'
 import DropdownTextField from './components/DropdownTextField';
@@ -60,7 +60,7 @@ const App: React.FC = () => {
           />
           
           <Route path="/dashboard" element={
-              <Layout visibility={visibleLayout}><DashboardPage/></Layout>
+              <Layout><DashboardPage/></Layout>
               // <Layout visibility={visibleLayout}><DashboardPage setLayoutVisibility={setVisibleLayout}/></Layout>
             } />
 
@@ -68,8 +68,8 @@ const App: React.FC = () => {
               <Layout><NotificationsPage /> </Layout>
             } />
           
-          <Route path="/reports" element={
-              <Layout><ReportPage /></Layout>
+          <Route path="/tracing" element={
+              <Layout><InventoryTracingPage /></Layout>
             } />
 
           {/* Fallback for 404s */}

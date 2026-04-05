@@ -105,76 +105,91 @@ exports.getStockActivities = async (req, res) => {
         const [handledStockProducts] = await exports.pool.execute(
             "CALL GetHandledStocks(?)", [userId]
         );
-
-        // console.log("length: " + result[0].length);
         
+        const [handlingStaff] = await exports.pool.execute(
+            "CALL GetHandlingStaff()",
+        );
 
-        // console.log("// ------------------------------------");
-        // for (i = minMax[0][0].min; i <= minMax[0][0].max; i++) {
-        //     //console.log(i);
+        console.log("length: " + handlingStaff[0].length)
+        let staffSummary = [];
+        let currentStaff = [];
+
+        let currentActivityId = minMax[0][0].max;
+        let staffIndex = 0;
+
+        for (let i = 0; i < handlingStaff[0].length; i++) {
+            while (handlingStaff[0][i].ActivityId < currentActivityId) {
+                if (currentActivityId == minMax[0][0].min) {
+                    break;
+                }
+                staffSummary.push(currentStaff);
+
+                currentActivityId--;
+                staffIndex++;
+                currentStaff = [];
+            }
+            
+            currentStaff.push(handlingStaff[0][i].Staff)
+
+            // include last set of items
+            if (i === handlingStaff[0].length - 1) {
+                staffSummary.push(currentStaff);
+            }
+        }
+
+        // for (let i = 0; i < staffSummary.length; i++) {
+        //     console.log(staffSummary[i]);
         // }
+
 
         let stockActivitySummary = [];
         let currentProduct = [];
 
-        let minActivityId = minMax[0][0].min;
+        currentActivityId = minMax[0][0].max;
         let stockActivityIndex = 0;
 
-        // console.log("// ------------------------------------");
-        for (let Y = 0; Y < handledStockProducts[0].length; Y++) {
-            while (handledStockProducts[0][Y].ActivityId != minActivityId) {
+        for (let i = 0; i < handledStockProducts[0].length; i++) {
+            while (handledStockProducts[0][i].ActivityId < currentActivityId) {
+                if (currentActivityId == minMax[0][0].min) {
+                    break;
+                }
+
                 stockActivitySummary.push({
                     ActivityId: stockActivities[0][stockActivityIndex].ActivityId,
                     ActivityType: stockActivities[0][stockActivityIndex].ActivityType,
                     Date: stockActivities[0][stockActivityIndex].Date,
+                    Staff: staffSummary[stockActivityIndex],
                     Products: currentProduct
                 });
-                currentProduct = [];
-                minActivityId++;
+                currentActivityId--;
                 stockActivityIndex++;
+                currentProduct = [];
             }
+
             currentProduct.push({
-                ProductName: handledStockProducts[0][Y].ProductName,
-                Quantity: handledStockProducts[0][Y].Quantity,
+                ProductName: handledStockProducts[0][i].ProductName,
+                Quantity: handledStockProducts[0][i].Quantity
             })
+            
+                qqqq = false;
 
             // include last set of items
-            if (Y === handledStockProducts[0].length - 1) {
+            if (i === handledStockProducts[0].length - 1) {
                 stockActivitySummary.push({
                     ActivityId: stockActivities[0][stockActivityIndex].ActivityId,
                     ActivityType: stockActivities[0][stockActivityIndex].ActivityType,
                     Date: stockActivities[0][stockActivityIndex].Date,
+                    Staff: staffSummary[stockActivityIndex],
                     Products: currentProduct
                 });
             }
         }
-
-
-        // let toExport2 = JSON.stringify(stockActivitySummary);
-        // console.log("JSON parse: " + JSON.parse(toExport2));
 
         for (let i = 0; i < stockActivitySummary.length; i++) {
             console.log(stockActivitySummary[i])
         }
-        
-        // for (j = 0; j < result[0].length; j++) {
-        //     Object.keys(toExport).forEach(key0 => {
-        //         console.log(`{`);
-        //         Object.keys(toExport[key0]).forEach(key1 => {
-        //             console.log(`  {`);
-        //             Object.keys(toExport[key0][key1]).forEach(key2 => {
-        //                 console.log(`    ${key2}: ${toExport[key0][key1][key2]}`);
-        //             });
-        //             console.log(`  }`);
-        //         });
-        //         console.log(`}`);
-        //     });
-        // }
-
-        // console.log("// ------------------------------------");
 
         res.status(200).json(stockActivitySummary);
-        // res.status(201).json({ message: "Success!" });
 
     } catch (error) {
         console.error("Error:", error);
