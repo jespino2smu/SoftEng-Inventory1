@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
+import type { Dispatch, SetStateAction } from "react";
+
 import { 
-Box, Button, Dialog, DialogTitle, 
+Box, Button, Dialog,
 DialogContent, DialogActions, Stack, Paper,
 Table, TableBody, TableCell, TableContainer, TableRow,
 useMediaQuery,
@@ -15,10 +17,17 @@ import AddIcon from "@mui/icons-material/Add";
 import IncrementField from '../components/IncrementField';
 
 
-export const StockMovementPage: React.FC = () => {
+interface StockMovementProps {
+  display: boolean;
+  data: Product[],
+  setData: Dispatch<SetStateAction<Product[]>>;
+  submitLabel: string;
+  onSubmit: () => void;
+}
+
+const StockMovementPage = ({display, data, setData, submitLabel, onSubmit}: StockMovementProps) => {
   const [open, setOpen] = useState(false);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [productSuggestions, setProductSuggestions] = useState<Product[]>([]);
+  const [searchSuggestions, setSearchSuggestions] = useState<Product[]>([]);
 
   const [currentProduct, setCurrentProduct] = useState<Product>({
     ProductId: 0,
@@ -64,7 +73,7 @@ export const StockMovementPage: React.FC = () => {
     //   });
     // });
 
-    setProductSuggestions(response[0]);
+    setSearchSuggestions(response[0]);
   }
 
 
@@ -81,9 +90,7 @@ export const StockMovementPage: React.FC = () => {
 
   const handleAdd = () => {
     //console.log("Adding Item:", newItem);
-
-
-    setProducts(prev => {
+    setData(prev => {
         const exists = prev.some(product => product.ProductId === currentProduct.ProductId);
 
         if (exists) {
@@ -96,14 +103,7 @@ export const StockMovementPage: React.FC = () => {
         } else {
             return [...prev, currentProduct];
         }
-  });
-
-
-
-
-
-
-
+    });
     handleClose();
   };
 
@@ -127,14 +127,15 @@ export const StockMovementPage: React.FC = () => {
 
 
 
-
   return (
+    <>
       <Box sx={{ 
         display: 'flex', 
         flexDirection: 'column',
         justifyContent: 'space-between', 
         alignItems: 'center', 
       }}>
+        {display &&
         <Stack
           direction="row"
           justifyContent="space-between" // spreads children to left/right
@@ -168,36 +169,40 @@ export const StockMovementPage: React.FC = () => {
             }}>Test
           </Button>
         </Stack>
-    <TableContainer
-      component={Paper}
-      sx={{
-        maxHeight: 'calc(100vh - 90px)',
-        width: '100%',
-        overflow: 'auto' }}>
-      <Table aria-label="responsive table">
+        }
+        {display &&
+        <TableContainer
+          component={Paper}
+          sx={{
+            maxHeight: 'calc(100vh - 90px)',
+            width: '100%',
+            overflow: 'auto' }}>
+          <Table aria-label="responsive table">
 
-        <TableBody>
-          {products.map((product, index) => (
-            <TableRow hover key={index}>
-              <TableCell align="left">
-                {product.Name}
-              </TableCell>
-              <TableCell align="right">
-                <IncrementField max={50}
-                  value={product.Quantity.toString()}
-                  setValue={(val) => (
-                    setProducts((prevData) => {
-                      const newData = [...prevData];
-                      newData[index].Quantity = val;
-                      return newData;
-                    }
-                  ))} />
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+            <TableBody>
+              {data.map((product, index) => (
+                <TableRow hover key={index}>
+                  <TableCell align="left">
+                    {product.Name}
+                  </TableCell>
+                  <TableCell align="right">
+                    <IncrementField max={50}
+                      value={product.Quantity.toString()}
+                      setValue={(val) => (
+                        setData((prevData) => {
+                          const newData = [...prevData];
+                          newData[index].Quantity = val;
+                          return newData;
+                        }
+                      ))} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        }
+      {display &&
       <Box sx={{
         textAlign: "center",
         mt: '5px'
@@ -205,16 +210,17 @@ export const StockMovementPage: React.FC = () => {
         <Button
           variant="contained"
           size="small"
+          onClick={onSubmit}
           sx={{
             height: '36px',
             padding: 0,
             margin: '0',
             width: { xs: '120px', sm: '120px' }
           }}>
-          Submit
+          {submitLabel}
         </Button>
       </Box>
-      
+      }
       <Dialog
         open={open}
         onClose={handleClose}
@@ -233,7 +239,7 @@ export const StockMovementPage: React.FC = () => {
           <Stack spacing={2} sx={{ mt: 1 }}>
 
             <SearchField
-                data={productSuggestions}
+                data={searchSuggestions}
                 onSuggestionPicked={handleSearchSuggestionClick}/>
 
             <Stack direction="row" justifyContent="center">
@@ -270,5 +276,8 @@ export const StockMovementPage: React.FC = () => {
         </DialogActions>
       </Dialog>
     </Box>
+      </>
   );
 };
+
+export default StockMovementPage;

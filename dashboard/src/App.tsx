@@ -10,7 +10,7 @@ import { NotificationsPage } from './pages/NotificationsPage'
 import DropdownTextField from './components/DropdownTextField';
 
 import { LogTest } from './tests/LogTest';
-import { StockMovementPage } from './pages/StockMovementPage';
+import StockMovementPage from './pages/StockMovementPage';
 
 const theme = createTheme({
   palette: {
@@ -37,7 +37,7 @@ const App: React.FC = () => {
           {/* Test */}
           <Route path="/drop-text" element={<DropdownTextField />} />
           <Route path="/test" element={<LogTest />} />
-          <Route path="/movement" element={<StockMovementPage />} />
+          {/* <Route path="/movement" element={<StockMovementPage />} /> */}
 
 
 

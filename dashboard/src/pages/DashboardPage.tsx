@@ -1,93 +1,150 @@
 import { useState } from 'react';
 import { 
   Box, Typography, Button, Dialog, DialogTitle, 
-  DialogContent, DialogActions, TextField, Stack 
+  DialogContent, DialogActions, TextField, Stack, 
+  useMediaQuery,
 } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
-import { DataTable } from '../components/DataTable';
+import {
+  Add as AddIcon,
+  LocalShipping as Receive,
+  ContentPaste as Inventory,
+  ExitToApp as Dispatch
+ } from '@mui/icons-material';
+
+import { post } from '../components/api';
+
+import StockMovementPage from './StockMovementPage';
+import type {Product} from '../types/Product';
+
+type Movement = "None" | "Receive" | "Dispatch" | "Inventory";
+
 
 export const DashboardPage = () => {
-  const [open, setOpen] = useState(false);
-  
-  // Local state for the new item form
-  const [newItem, setNewItem] = useState({ name: '', quantity: '' });
+  const [stockMovement, setStockMovement] = useState<Movement>("None");
 
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => {
-    setOpen(false);
-    setNewItem({ name: '', quantity: '' }); // Reset form on close
-  };
+  const [receiveStocks, setReceiveStocks] = useState<Product[]>([]);
+  const [dispatchStocks, setDispatchStocks] = useState<Product[]>([]);
+  const [stockInventory, setStockInventory] = useState<Product[]>([]);
 
-  const handleAdd = () => {
-    console.log("Adding Item:", newItem);
-    // Here you would typically update your data state or call an API
-    handleClose();
-  };
+  const [displayReceiveStocks, setDisplayReceiveStocks] = useState<boolean>(false);
+  const [displayDispatchStocks, setDisplayDispatchStocks] = useState<boolean>(false);
+  const [displayStockInventory, setDisplayStockInventory] = useState<boolean>(false);
 
-  const dashboardData = [
-    { id: 101, name: 'Widget A', quantity: 50 },
-    { id: 102, name: 'Widget B', quantity: 20 },
-  ];
+  const buttonIcon = {fontSize: '40px', };
 
+  const buttonText = {
+    paddingLeft: '15px',
+    marginRight: 'auto',
+    fontSize: {
+      lg: '24px',
+      xs: '16px',
+      sm: '18px'
+  }};
+
+  function onSubmit() {
+    if (stockMovement === "Dispatch") {
+      addActivity(stockMovement, dispatchStocks);
+    } else if (stockMovement === "Inventory") {
+      addActivity(stockMovement, stockInventory);
+    } else if (stockMovement === "Receive") {
+      addActivity(stockMovement, receiveStocks);
+    }
+  }
+
+  async function addActivity(movement: string, stocks: Product[]) {
+      const result = await post('/stocks/add-activity', {
+        movement: movement,
+        stocks: stocks,
+      });
+  }
+
+  function togglePage(movement: Movement) {
+    switch (movement) {
+      case "Dispatch":
+        setStockMovement(movement);
+        setDisplayDispatchStocks(true);
+        setDisplayStockInventory(false);
+        setDisplayReceiveStocks(false);
+        break;
+      case "Inventory":
+        setStockMovement(movement);
+        setDisplayDispatchStocks(false);
+        setDisplayStockInventory(true);
+        setDisplayReceiveStocks(false);
+        break;
+      case "Receive":
+        setStockMovement(movement);
+        setDisplayDispatchStocks(false);
+        setDisplayStockInventory(false);
+        setDisplayReceiveStocks(true);
+        break;
+      default:
+        setStockMovement(movement);
+        setDisplayDispatchStocks(false);
+        setDisplayStockInventory(false);
+        setDisplayReceiveStocks(false);
+        break;
+    }
+  }
   return (
-    <Box>
-      <Box sx={{ 
+    <>
+        <StockMovementPage
+          display={displayReceiveStocks}
+          submitLabel='Receive'
+          data={receiveStocks}
+          setData={setReceiveStocks}
+          onSubmit={onSubmit} />
+          
+        <StockMovementPage
+          display={displayStockInventory}
+          submitLabel='Confirm Inventory'
+          data={stockInventory}
+          setData={setStockInventory}
+          onSubmit={onSubmit} />
+
+        <StockMovementPage
+          display={displayDispatchStocks}
+          submitLabel='Dispatch'
+          data={dispatchStocks}
+          setData={setDispatchStocks}
+          onSubmit={onSubmit} />
+
+        <Box sx={{ 
         display: 'flex', 
+        flexDirection: useMediaQuery('(orientation: portrait)')? 'column' : 'row',
         justifyContent: 'space-between', 
         alignItems: 'center', 
-        mb: 3 
       }}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-          Dashboard
-        </Typography>
-        
-        <Button 
-          variant="contained" 
-          startIcon={<AddIcon />} 
-          onClick={handleOpen}
-        >
-          Add Item
-        </Button>
+
+    {stockMovement === 'None'&&
+        <Stack spacing={'20px'} sx={{marginTop: '10px'}}>
+          <Button variant="contained"
+            onClick={() => togglePage("Receive")}>
+            <Receive style={buttonIcon} />
+            <Typography
+              sx={buttonText}>Receive Stocks
+            </Typography>
+          </Button>
+
+          <Button variant="contained"
+            onClick={() => togglePage("Dispatch")}>
+            <Dispatch style={buttonIcon} />
+            <Typography
+              sx={buttonText}>Dispatch Stocks
+            </Typography>
+          </Button>
+
+          <Button variant="contained"
+            onClick={() => togglePage("Inventory")}>
+            <Inventory style={buttonIcon} />
+            <Typography
+              sx={buttonText}>Inventory
+            </Typography>
+          </Button>
+        </Stack>
+      }
+
       </Box>
-
-      <DataTable rows={dashboardData} />
-
-      {/* Add Item Dialog */}
-      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="xs">
-        <DialogTitle>Add New Item</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField
-              autoFocus
-              label="Item Name"
-              fullWidth
-              variant="outlined"
-              value={newItem.name}
-              onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-            />
-            <TextField
-              label="Initial Quantity"
-              type="number"
-              fullWidth
-              variant="outlined"
-              value={newItem.quantity}
-              onChange={(e) => setNewItem({ ...newItem, quantity: e.target.value })}
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions sx={{ p: 2, justifyContent: 'space-between' }}>
-          <Button onClick={handleClose} color="inherit">
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleAdd} 
-            variant="contained" 
-            disabled={!newItem.name || !newItem.quantity}
-          >
-            Add Item
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+    </>
   );
 };

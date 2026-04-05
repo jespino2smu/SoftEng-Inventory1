@@ -8,9 +8,6 @@ module.exports.setPool = function(pool) {
     userController.pool = pool;
 };
 
-
 router.post('/login', userController.login);
 router.post('/signup', userController.signUp);
-
-router.post('/test', userController.test);
 
