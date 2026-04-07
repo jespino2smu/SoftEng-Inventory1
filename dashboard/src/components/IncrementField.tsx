@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import IconButton from "@mui/material/IconButton";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
-import { Button, TextField } from "@mui/material";
+import { TextField } from "@mui/material";
 
 type NumberStepperProps = {
   max: number;
@@ -136,6 +136,12 @@ function numberField()
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             sx={numberField()}
+            slotProps={{
+              htmlInput: {
+                inputMode: "numeric",
+                pattern: "[0-9]*"
+              }
+            }}
         />
         <IconButton onClick={increment} sx={
             myButton('0 6px 6px 0')}>
@@ -145,17 +151,17 @@ function numberField()
   );
 };
 
-const styles = {
-  button: {
-    padding: "8px 12px",
-    fontSize: "16px",
-    cursor: "pointer"
-  },
-  input: {
-    width: "60px",
-    textAlign: "center" as const,
-    padding: "6px"
-  }
-};
+// const styles = {
+//   button: {
+//     padding: "8px 12px",
+//     fontSize: "16px",
+//     cursor: "pointer"
+//   },
+//   input: {
+//     width: "60px",
+//     textAlign: "center" as const,
+//     padding: "6px"
+//   }
+// };
 
 export default IncrementField;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import type { Dispatch, SetStateAction } from "react";
 
 import { 
@@ -9,7 +9,7 @@ useMediaQuery,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
-import { post } from '../components/api';
+import { axPost } from '../config/axios-config';
 
 import { type Product} from '../types/Product';
 
@@ -50,13 +50,14 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
 
 
   useEffect(() => {
+    
     updateData();
   }, []);
 
   async function updateData() {
-    const response = await post('/stocks/get-products', {
-        activity: 'Inventory',
-    });
+  const response = await axPost('/stocks/get-products', {
+    activity: 'Inventory',
+  });
 
     //alert(response[0][0].Quantity);
 

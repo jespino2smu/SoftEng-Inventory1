@@ -1,17 +1,16 @@
-import { useState, useEffect, type SetStateAction } from 'react';
+import { useState } from 'react';
 import { 
-  Box, Typography, Button, Dialog, DialogTitle, 
-  DialogContent, DialogActions, TextField, Stack, 
+  Box, Typography, Button,
+  Stack, 
   useMediaQuery,
 } from '@mui/material';
 import {
-  Add as AddIcon,
   LocalShipping as Receive,
   ContentPaste as Inventory,
   ExitToApp as Dispatch
  } from '@mui/icons-material';
 
-import { post } from '../components/api';
+import { axPost } from '../config/axios-config';
 
 import StockMovementPage from './StockMovementPage';
 import type {Product} from '../types/Product';
@@ -82,7 +81,12 @@ export const DashboardPage = () => {
   }
 
   async function addActivity(movement: string, stocks: Product[]) {
-      const result = await post('/stocks/add-activity', {
+      // const result = await post('/stocks/add-activity', {
+      //   movement: movement,
+      //   stocks: stocks,
+      // });
+
+      await axPost('/stocks/add-activity', {
         movement: movement,
         stocks: stocks,
       });

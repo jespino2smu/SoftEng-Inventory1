@@ -1,10 +1,9 @@
 import React from 'react';
 import {
-  Paper, Button,
+  Paper,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Box,
   Stack,
-  List, ListItem, ListItemIcon, ListItemText
 } from '@mui/material';
 
 interface DataRow {
@@ -21,21 +20,23 @@ interface DataTableProps {
   rows: DataRow[];
 }
 
-const renderProductNames = (rows: any) => {
-  return (
-    <>
-      {
-        rows.forEach((product: any) => {
-          product.ProductName
-        })
-      }
-    </>
-  );
-}
+// const renderProductNames = (rows: any) => {
+//   return (
+//     <>
+//       {
+//         rows.forEach((product: any) => {
+//           product.ProductName
+//         })
+//       }
+//     </>
+//   );
+// }
 
 export const StockActivityTable: React.FC<DataTableProps> = ({ rows }) => {
   return (
-    <TableContainer component={Paper} sx={{ width: '100%', overflowX: 'auto' }}>
+    <TableContainer component={Paper} sx={{
+      width: '100%', overflowX: 'auto',
+      }}>
       <Table aria-label="responsive table">
         <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
           <TableRow>
@@ -43,12 +44,14 @@ export const StockActivityTable: React.FC<DataTableProps> = ({ rows }) => {
             <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
               <strong>ID</strong>
             </TableCell> */}
-            <TableCell align="left"><strong>Products</strong></TableCell>
+            <TableCell align="center"><strong>Products</strong></TableCell>
             <TableCell align="center"><strong>Staff</strong></TableCell>
             {/* Hide ID column on extra-small screens */ }
-            <TableCell sx={{
-                display: { xs: 'none', sm:'table-cell' } }}>
-                <strong>Date</strong></TableCell>
+            <TableCell
+                // sx={{
+                // display: { xs: 'none', sm:'table-cell' } }}
+            >
+              <strong>Date</strong></TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -57,20 +60,16 @@ export const StockActivityTable: React.FC<DataTableProps> = ({ rows }) => {
               <TableCell sx={{ verticalAlign: 'top',}}>
 
 
-  {row.Products.map((product: any, index) => (
-    <Box sx={{
-        backgroundColor: 'red',
-        width: 'fit-Content',
-  display: 'grid',
-  gridTemplateColumns: '1fr 24px 1fr',
-  alignItems: 'start',
-  columnGap: 1,
-}}>
-    <Box textAlign="right" sx={{width: '5px',}}>{product.Quantity}</Box>
-    <Box textAlign="center" sx={{width: '8px',}}>&times;</Box>
-    <Box  sx={{width: '120px',}}>{product.ProductName}</Box>
-</Box>
-  ))}
+                {row.Products.map((product: any, index) => (
+                  <Stack key={index} spacing="2px"
+                    direction="row" sx={{
+                    }}
+                  >
+                  <Box textAlign="right" sx={{width: '80px',}}>{product.Quantity}</Box>
+                  <Box textAlign="center" sx={{width: '10px',}}>&times;</Box>
+                  <Box  sx={{width: '120px',}}>{product.ProductName}</Box>
+                  </Stack>
+                ))}
 
 
 
@@ -129,8 +128,10 @@ export const StockActivityTable: React.FC<DataTableProps> = ({ rows }) => {
 
 
             {/* Hide ID column on extra-small screens */ }
-                <TableCell sx={{
-                  display: { xs: 'none', sm:'table-cell' } }}>
+                <TableCell
+                  // sx={{
+                  // display: { xs: 'none', sm:'table-cell' } }}
+                  >
                 <small>{row.Date}</small>
               </TableCell>
             </TableRow>

@@ -6,7 +6,7 @@ import {
 import { Search as SearchIcon, Close as CloseIcon } from '@mui/icons-material';
 import { StockActivityTable } from '../components/StockActivityTable';
 
-import { post } from '../components/api';
+import { axPost } from '../config/axios-config';
 
 export const InventoryTracingPage = () => {
   const [open, setOpen] = useState(false);
@@ -19,7 +19,7 @@ export const InventoryTracingPage = () => {
   }, []);
   
   async function getStockActivities() {
-      const result = await post('/stocks/get-stock-activities', {});
+      const result = await axPost('/stocks/get-stock-activities', {});
       setStockActivities(result);
       
       // let readActivities: string = "";

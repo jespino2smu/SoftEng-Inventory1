@@ -8,4 +8,9 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] })
   ],
+
+
+  server: {
+    allowedHosts: ['irksomely-unconditional-glenna.ngrok-free.dev']
+  }
 })

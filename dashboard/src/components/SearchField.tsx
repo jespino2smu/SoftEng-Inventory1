@@ -18,6 +18,7 @@ const index = new Document<{
   },
   preset: "match",
   tokenize: "forward",
+  cache: true,
   encode: (str: string) => str.toLowerCase().split(/\s+/),
 });
 
@@ -59,12 +60,27 @@ export const SearchField: React.FC<SearchComponentProps> = ({ data, onSuggestion
       getOptionLabel={(option) =>
         typeof option === "string" ? option : option.Name
       }
-      inputValue={inputValue}
-      onInputChange={(event, newInputValue) => setInputValue(newInputValue) }
+      // inputValue={inputValue}
+      // onInputChange={(event, newInputValue) => setInputValue(newInputValue) }
+      // onChange={(event, value) => {
+      //   if (value && typeof value !== "string") {
+      //     onSuggestionPicked(value.ProductId, value.Name);
+      //     // alert(`ID: ${value.ProductId}\nName: ${value.Name}`);
+      //   }
+        
+      onInputChange={(event, newInputValue) => {
+        setInputValue(newInputValue);
+        if (false) {
+          event;
+        }
+      }}
       onChange={(event, value) => {
         if (value && typeof value !== "string") {
           onSuggestionPicked(value.ProductId, value.Name);
           // alert(`ID: ${value.ProductId}\nName: ${value.Name}`);
+          if (false) {
+            event;
+          }
         }
       }}
 

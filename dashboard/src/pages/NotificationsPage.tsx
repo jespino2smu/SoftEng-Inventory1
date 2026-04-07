@@ -36,7 +36,7 @@ const TypeIcon = ({ type }: { type: string }) => {
 
 export const NotificationsPage: React.FC = () => {
   const [selectedNotif, setSelectedNotif] = useState<NotificationItem | null>(null);
-  const [checked, setChecked] = useState<number[]>([]);
+  //const [checked, setChecked] = useState<number[]>([]);
 
 //   const handleToggle = (value: number) => () => {
 //     const currentIndex = checked.indexOf(value);
@@ -75,7 +75,7 @@ export const NotificationsPage: React.FC = () => {
                   <ListItemIcon sx={{ minWidth: 40, mt: 1 }}>
                     <Checkbox
                       edge="start"
-                      checked={checked.indexOf(notif.id) !== -1}
+                      //checked={checked.indexOf(notif.id) !== -1}
                       tabIndex={-1}
                       disableRipple
                     />
