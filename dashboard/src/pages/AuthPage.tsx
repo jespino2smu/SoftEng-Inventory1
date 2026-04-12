@@ -1,5 +1,18 @@
 import React, { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
+import {
+  TextField,
+  Button,
+  Box,
+  Typography,
+  IconButton,
+  InputAdornment,
+  Container,
+  Paper
+} from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import api from "../api/api";
 import {
   TextField,
   Button,
@@ -19,6 +32,15 @@ interface AuthPageProps {
 }
 
 const AuthPage = ({type}: AuthPageProps) => {
+  const [form, setForm] = useState({
+    firstName: "",
+    middleInitial: "",
+    lastName: "",
+    username: "",
+    password: "",
+    confirmPassword: ""
+  });
+
   const [form, setForm] = useState({
     firstName: "",
     middleInitial: "",
@@ -113,11 +135,97 @@ const AuthPage = ({type}: AuthPageProps) => {
         }
     }
   };
+  const [errors, setErrors] = useState<any>([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const validatePassword = (password: string) => {
+    if (password.length < 8) {
+      return "Must be at least 8 characters long";
+    }
+    if (!/[A-Za-z]/.test(password)) {
+      return "Must include at least 1 letter";
+    }
+    if (!/\d/.test(password)) {
+      return "Must include at least 1 number";
+    }
+    if (!/[@$!%*#?&]/.test(password)) {
+      return "Must include at least 1 special character";
+    }
+    return "";
+  };
+
+  const validate = () => {
+    let newErrors: any = {};
+
+    if (!form.firstName.trim()) newErrors.firstName = "Required";
+    if (!form.lastName.trim()) newErrors.lastName = "Required";
+    if (!form.username.trim()) newErrors.username = "Required";
+
+    if (!form.password) {
+      newErrors.password = "Password is required";
+    } else {
+      const passwordError = validatePassword(form.password);
+      if (passwordError) newErrors.password = passwordError;
+    }
+
+    // Confirm password
+    if (!form.confirmPassword) {
+      newErrors.confirmPassword = "Please confirm your password";
+    } else if (form.password !== form.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+
+    return newErrors;
+  };
+
+  const handleChange = (e: { target: { name: any; value: any; }; }) => {
+    const { name, value } = e.target;
+
+    setForm({
+      ...form,
+      [name]: value
+    });
+
+    setErrors({
+      ...errors,
+      [name]: ""
+    });
+  };
+
+  const handleSubmit = (e: { preventDefault: () => void; }) => {
+    e.preventDefault();
+
+    if (type === 'Signup') {
+        const validationErrors = validate();
+        setErrors(validationErrors);
+
+        if (Object.keys(validationErrors).length === 0) {
+            handleSignup();
+        //console.log("Form submitted:", form);
+        } else {
+            return;
+        }
+    } else if (type === 'Login') {
+        let newErrors: any = {};
+        if (!form.username.trim()) newErrors.username = "Required";
+        if (!form.password) newErrors.password = "Required";
+        setErrors(newErrors);
+
+        if (Object.keys(newErrors).length === 0) {
+            handleLogin();
+        } else {
+            return;
+        }
+    }
+  };
 
   const handleLogin = async () => {
     try {
       const response = await api.post('/users/login',
       {
+        username: form.username,
+        password: form.password
         username: form.username,
         password: form.password
       });
@@ -127,6 +235,8 @@ const AuthPage = ({type}: AuthPageProps) => {
       navigate('/dashboard');
     } catch (err: any) {
       //alert(err.response?.data?.message || "Login failed");
+      //alert(err.details);
+      alert("Incorrect username or password!");
       //alert(err.details);
       alert("Incorrect username or password!");
     }
@@ -141,8 +251,14 @@ const AuthPage = ({type}: AuthPageProps) => {
         firstName: form.firstName,
         middleInital: form.middleInitial,
         lastName: form.lastName,
+        username: form.username,
+        password: form.password,
+        firstName: form.firstName,
+        middleInital: form.middleInitial,
+        lastName: form.lastName,
       });
       alert("Signup successful! Please login.");
+      navigate('/login');
       navigate('/login');
     } catch (err: any) {
       alert(err.message);
@@ -150,7 +266,27 @@ const AuthPage = ({type}: AuthPageProps) => {
     }
   };
   
+  
   return (
+    <Container maxWidth="sm">
+      <Paper elevation={3}
+        sx={{
+            padding: 4, marginTop: 8
+        }}>
+        <Typography variant="h5" gutterBottom>
+          Sign Up
+        </Typography>
+
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+          {type === 'Signup' && <TextField
+            fullWidth
+            label="First Name"
+            name="firstName"
+            margin="normal"
+            value={form.firstName}
+            onChange={handleChange}
+            error={!!errors.firstName}
+            helperText={errors.firstName}
     <Container maxWidth="sm">
       <Paper elevation={3}
         sx={{
@@ -180,8 +316,25 @@ const AuthPage = ({type}: AuthPageProps) => {
             inputProps={{ maxLength: 1 }}
             value={form.middleInitial}
             onChange={handleChange}
+          {type === 'Signup' && <TextField
+            fullWidth
+            label="Middle Initial"
+            name="middleInitial"
+            margin="normal"
+            inputProps={{ maxLength: 1 }}
+            value={form.middleInitial}
+            onChange={handleChange}
           />}
 
+          {type === 'Signup' && <TextField
+            fullWidth
+            label="Last Name"
+            name="lastName"
+            margin="normal"
+            value={form.lastName}
+            onChange={handleChange}
+            error={!!errors.lastName}
+            helperText={errors.lastName}
           {type === 'Signup' && <TextField
             fullWidth
             label="Last Name"
@@ -258,9 +411,77 @@ const AuthPage = ({type}: AuthPageProps) => {
           {type === 'Login' && <Button variant="contained" fullWidth
             type="submit"
             sx={{ marginTop: 3 }}>
+          <TextField
+            fullWidth
+            label="Username"
+            name="username"
+            margin="normal"
+            value={form.username}
+            onChange={handleChange}
+            error={!!errors.username}
+            helperText={errors.username}
+          />
+
+          <TextField
+            fullWidth
+            label="Password"
+            name="password"
+            margin="normal"
+            type={showPassword ? "text" : "password"}
+            value={form.password}
+            onChange={handleChange}
+            error={!!errors.password}
+            helperText={errors.password}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowPassword((prev) => !prev)} edge="end">
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
+          />
+
+          {type === 'Signup' && <TextField
+            fullWidth
+            label="Confirm Password"
+            name="confirmPassword"
+            margin="normal"
+            type={showConfirmPassword ? "text" : "password"}
+            value={form.confirmPassword}
+            onChange={handleChange}
+            error={!!errors.confirmPassword}
+            helperText={errors.confirmPassword}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowConfirmPassword((prev) => !prev)} edge="end">
+                    {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
+          />}
+
+          {/* <Button
+            fullWidth
+            type="submit"
+            variant="contained"
+            sx={{ marginTop: 3 }}
+          >
+            Create Account
+          </Button> */}
+
+          {type === 'Login' && <Button variant="contained" fullWidth
+            type="submit"
+            sx={{ marginTop: 3 }}>
             Log in
           </Button>}
 
+          {type === 'Signup' && <Button variant="contained" color="secondary" fullWidth
+            type="submit"
+            sx={{ marginTop: 3 }}>
           {type === 'Signup' && <Button variant="contained" color="secondary" fullWidth
             type="submit"
             sx={{ marginTop: 3 }}>
