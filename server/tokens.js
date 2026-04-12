@@ -13,19 +13,19 @@ const authenticateToken = (req, res, next) => {
 
   // console.log("\nauthHeader: " + authHeader + "\n");
   if (!token) {
-    // console.log("\nAccess Denied\n");
+    //  console.log("\nAccess Denied\n");
     return res.status(401).json({ message: "Access Denied" });
   }
 
   jwt.verify(token, SECRET_KEY, (err, user) => {
     if (err) {
-      // console.log("\nInvalid Token\n");
+      //  console.log("\nInvalid Token\n");
       return res.status(403).json({ message: "Invalid Token" });
     }
     req.userId = user.id; // req.user = user;
     req.role = user.role; // req.user = user;
     // console.log("authenticated user (jsonwebtoken) :");
-    // console.log(req.user);
+    // console.log(req.userId);
     // console.log("\n\n");
     next();
   });

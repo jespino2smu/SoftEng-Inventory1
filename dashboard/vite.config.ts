@@ -11,6 +11,6 @@ export default defineConfig({
 
 
   server: {
-    allowedHosts: ['irksomely-unconditional-glenna.ngrok-free.dev']
+    allowedHosts: ['ancient-organize-interference-portland.trycloudflare.com']
   }
 })

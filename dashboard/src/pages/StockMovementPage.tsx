@@ -59,40 +59,16 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
     activity: 'Inventory',
   });
 
-    //alert(response[0][0].Quantity);
+      // let n = "";
+      // Object.keys(response.data[0]).forEach(key0 => {
+      //   //n += `${key0}: ${response.data[0][key0]}\n`;
+      //   Object.keys(response.data[0][key0]).forEach(key1 => {
+      //      n += `${key1}: ${response.data[0][key0][key1]}\n`;
+      //   });
+      // });
+      // alert(n);
 
-    // Object.keys(response[0][0]).forEach(
-    //   function(k) {
-    //     alert(k + ' - ' + response[0][k]);
-    // });
-
-
-    // response[0].forEach(
-    //   (item: Product) => index.add(item)
-    // );
-
-    // response[0].forEach((item: { ProductId: any; ProductName: string; })  => {
-    //   index.add({
-    //     id: item.ProductId,
-    //     name: item.ProductName.toLowerCase(), // normalize to lowercase
-    //   });
-    // });
-    //alert(response);
-
-        let n = "";
-      Object.keys(response.data).forEach(key0 => {
-        n += `${key0}: ${response.data[key0]}\n`;
-        // Object.keys(response.data[key0]).forEach(key1 => {
-        //   n += "{\n";
-        //   Object.keys(response.data[key0][key1]).forEach(key2 => {
-        //     n += `    ${key2}: ${response.data[key0][key1][key2]}\n`;
-        //   });
-        //   n += "}\n";
-        // });
-      });
-      alert(n);
-
-    setSearchSuggestions(response[0]);
+    setSearchSuggestions(response.data[0]);
   }
 
 

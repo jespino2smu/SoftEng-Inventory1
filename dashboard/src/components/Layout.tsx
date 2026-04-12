@@ -35,7 +35,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 const navItems = [
   { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
-  { text: 'Reports', icon: <Assessment />, path: '/reports' },
+  { text: 'Inventory Tracing', icon: <Assessment />, path: '/tracing' },
   { text: 'Notifications', icon: <Notifications />, path: '/notifications' },
 ];
 

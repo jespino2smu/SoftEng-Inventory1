@@ -10,8 +10,8 @@ exports.getProducts = async (req, res) => {
             "CALL GetEmptyProducts()"
         );
 
-        console.log("\n");
-        console.log(result);
+        // console.log("\n");
+        // console.log(result);
 
         //res.status(201).json({ message: "Success!" });
         res.status(201).json(result);
@@ -23,11 +23,11 @@ exports.getProducts = async (req, res) => {
 };
 
 exports.addActivity = async (req, res) => {
-    console.log("Ran!");
-    const { userId, movement, stocks } = req.body;
+    console.log("Add Activity");
+    const { movement, stocks } = req.body;
 
     // console.log("activity: " + activity);
-    // console.log("userId: " + userId);
+    // console.log("userId: " + req.userId);
 
     if (!movement) {
         return res.status(400).json({ message: "Stock movement is undefined" });
@@ -40,11 +40,11 @@ exports.addActivity = async (req, res) => {
 
         const [result] = await exports.pool.execute(
             "CALL CreateActivity(?, ?);",
-            [userId, movement]
+            [req.userId, movement]
         );
 
         const activityId = result[0][0].id; // 
-        console.log("userId: " + userId);
+        console.log("userId: " + req.userId);
         console.log("activityId: " + activityId);
 
         let [stockInfo] = [];
@@ -59,7 +59,7 @@ exports.addActivity = async (req, res) => {
         
         [stockInfo] = await exports.pool.execute(
             "CALL AddHandledStaff(?, ?);",
-            [userId, activityId]
+            [req.userId, activityId]
         );
 
         res.status(200).json(result);
@@ -72,21 +72,25 @@ exports.addActivity = async (req, res) => {
 };
 
 exports.getStockActivities = async (req, res) => {
-    console.log("Ran!");
-    const { userId } = req.body;
+    // console.log("\n")
+    // console.log("\n")
+    // console.log("\n")
+    // console.log("Activities!");
+    // console.log("\n")
+    //const { userId } = req.body;
 
     // console.log("activity: " + activity);
-    // console.log("userId: " + userId);
+    // console.log("userID: " + req.userId);
 
-    // if (!userId) {
-    //     return res.status(400).json({ message: "User does not exist" });
-    // }
+    if (!req.userId) {
+        return res.status(400).json({ message: "User does not exist" });
+    }
 
     try {
 
         const [minMax] = await exports.pool.execute(
             "CALL GetMinMaxStockActivitiesId()",
-            [userId]
+            [req.userId]
         );
         
         // console.log("result:\n" + minMax[0][0].min + ", " +  + minMax[0][0].max);
@@ -104,14 +108,14 @@ exports.getStockActivities = async (req, res) => {
         // }
 
         const [handledStockProducts] = await exports.pool.execute(
-            "CALL GetHandledStocks(?)", [userId]
+            "CALL GetHandledStocks(?)", [req.userId]
         );
         
         const [handlingStaff] = await exports.pool.execute(
             "CALL GetHandlingStaff()",
         );
 
-        console.log("length: " + handlingStaff[0].length)
+        //console.log("length: " + handlingStaff[0].length)
         let staffSummary = [];
         let currentStaff = [];
 

@@ -20,7 +20,16 @@ export const InventoryTracingPage = () => {
   
   async function getStockActivities() {
       const result: any = await api.post('/stocks/get-stock-activities', {});
-      setStockActivities(result);
+
+      //alert(result.data);
+
+      // let n = "";
+      // Object.keys(result.data).forEach(key0 => {
+      //   n += `${key0}: ${result.data[key0]}\n`;
+      // });
+      // alert(n);
+
+      setStockActivities(result.data);
       
       // let readActivities: string = "";
       // result.forEach((item: any) => {
@@ -37,7 +46,7 @@ export const InventoryTracingPage = () => {
     <Box>
       <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>Inventory Tracing</Typography>
       
-      <TextField
+      {/* <TextField
         fullWidth
         placeholder="Search reports..."
         variant="outlined"
@@ -50,7 +59,7 @@ export const InventoryTracingPage = () => {
             </InputAdornment>
           ),
         }}
-      />
+      /> */}
 
       <StockActivityTable rows={stockActivities} />
 
