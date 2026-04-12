@@ -141,7 +141,7 @@ const AuthPage = ({type}: AuthPageProps) => {
         middleInital: form.middleInitial
       });
       alert("Signup successful! Please login.");
-      navigate('/');
+      navigate('/login');
     } catch (err: any) {
       alert(err.message);
       //alert(err.response?.data?.message || "Signup failed");
@@ -242,60 +242,7 @@ const AuthPage = ({type}: AuthPageProps) => {
                 </InputAdornment>
               )
             }}
-          />}
-
-          <TextField
-            fullWidth
-            label="Username"
-            name="username"
-            margin="normal"
-            value={form.username}
-            onChange={handleChange}
-            error={!!errors.username}
-            helperText={errors.username}
-          />
-
-          <TextField
-            fullWidth
-            label="Password"
-            name="password"
-            margin="normal"
-            type={showPassword ? "text" : "password"}
-            value={form.password}
-            onChange={handleChange}
-            error={!!errors.password}
-            helperText={errors.password}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPassword((prev) => !prev)} edge="end">
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              )
-            }}
-          />
-
-          {type === 'Signup' && <TextField
-            fullWidth
-            label="Confirm Password"
-            name="confirmPassword"
-            margin="normal"
-            type={showConfirmPassword ? "text" : "password"}
-            value={form.confirmPassword}
-            onChange={handleChange}
-            error={!!errors.confirmPassword}
-            helperText={errors.confirmPassword}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setShowConfirmPassword((prev) => !prev)} edge="end">
-                    {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              )
-            }}
-          />}
+          />} 
 
           {/* <Button
             fullWidth
