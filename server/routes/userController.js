@@ -1,63 +1,36 @@
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
+const { generateToken } = require('../tokens');
 
 const saltRounds = 10;
 exports.pool = null;
 
-
-// exports.test = async (req, res) => {
-//     console.log("Ran!");
-//     const { userId, test } = req.body;
-
-//     console.log("test: " + test);
-//     console.log("userId: " + userId);
-//     if (!test) {
-//         return res.status(400).json({ message: "Incomplete user information" });
-//     }
-
-//     try {
-
-//         const [result] = await exports.pool.execute(
-//             "CALL AuditLog(?, 'Table', 2, ?);",
-//             [userId, test]
-//         );
-
-//         res.status(201).json({ message: "Success!" });
-
-//     } catch (error) {
-//         console.error("Error:", error);
-//         res.status(500).json({ message: "Error", details: error.message });
-//     }
-// };
-
 exports.login = async (req, res) => {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
-    if (!email || !password) {
+    if (!username || !password) {
         return res.status(400).json({ message: "Username and password are required" });
     }
 
     try {
-        const [rows] = await exports.pool.execute('SELECT fullname AS name, email, role, password FROM users_tbl WHERE email=?', [email]);
+        const [rows] = await exports.pool.execute('SELECT StaffId as Id, Username, Password, FirstName, LastName, MiddleInitial, Role FROM staff WHERE username=?', [username]);
 
         if (rows[0].length === 0) {
             return res.status(401).json({ message: "Invalid email or password" });
         }
 
-        const selectedPassword = rows[0].password;
+        const selectedPassword = rows[0].Password;
         const isMatch = await bcrypt.compare(password, selectedPassword);
 
         if (!isMatch) {
-            return res.status(401).json({ message: "Invalid email or password" });
+            return res.status(401).json({ message: "Invalid username or password" });
+        } else {
+          const token = generateToken(rows[0].Id, rows[0].Role);
+          res.status(200).json({ token });
         }
 
-        res.status(200).json({
-            message: "Login successful",
-            name: rows[0].name,
-            role: rows[0].role
-        });
         
         //console.log("Status code Q: " +res.statusCode);
-        console.log(rows[0].role);
+        // console.log(rows[0].Role);
 
     } catch (error) {
         console.error("Database Error:", error);
@@ -66,40 +39,41 @@ exports.login = async (req, res) => {
 };
 
 exports.signUp = async (req, res) => {
-    const { name, email, password } = req.body;
-    console.log("Ran");
-    console.log("Name: " + name);
-    console.log("Email: " + email);
-    console.log("Password: " + password);
+    const { username, password, firstName, lastName, middleInital } = req.body;
 
 
-    if (!name || !email || !password) {
+    if (!username || !password ||!firstName || !lastName) {
         return res.status(400).json({ message: "Incomplete user information" });
     }
-    const simplifiedName = name.trim().toLowerCase();
+    
+    if (!middleInital) {
+        middleInital = "";
+    }
+
+    const simplifiedName = username.trim().toLowerCase();
 
     try {
         let [matchedUserCount] = await exports.pool.execute(
-            'SELECT COUNT(email) FROM users_tbl WHERE email=?',
-            [email]
+            'SELECT COUNT(Username) FROM staff WHERE username=?',
+            [username]
         );
         if (matchedUserCount[0].value > 0) {
-            return res.status(400).json({ message: "Email already exists" });
+            return res.status(400).json({ message: "Username already exists" });
         }
 
-        [matchedUserCount] = await exports.pool.execute(
-            'SELECT COUNT(fullname) FROM users_tbl WHERE fullname=?',
-            [simplifiedName]
-        );
-        if (matchedUserCount[0].value > 0) {
-            return res.status(400).json({ message: "Name already exists" });
-        }
+        // [matchedUserCount] = await exports.pool.execute(
+        //     'SELECT COUNT(fullname) FROM users_tbl WHERE fullname=?',
+        //     [simplifiedName]
+        // );
+        // if (matchedUserCount[0].value > 0) {
+        //     return res.status(400).json({ message: "Name already exists" });
+        // }
 
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
         await exports.pool.execute(
-            'INSERT INTO users_tbl (fullname, email, password) VALUES (?, ?, ?);',
-            [name.trim(), email, hashedPassword]
+            'INSERT INTO staff (Username, Password, FirstName, LastName, MiddleInitial) VALUES (?, ?, ?, ?, ?);',
+            [username.trim(), hashedPassword, firstName, lastName, middleInital]
         );
 
         res.status(201).json({ message: "User was signed up successfully!" });

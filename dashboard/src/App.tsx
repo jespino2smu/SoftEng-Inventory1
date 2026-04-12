@@ -3,13 +3,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import Layout from './components/Layout';
 
-import { AuthPage } from './pages/AuthPage';
+import AuthPage from './pages/AuthPage';
 import { InventoryTracingPage } from './pages/InventoryTracingPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { NotificationsPage } from './pages/NotificationsPage'
 import DropdownTextField from './components/DropdownTextField';
 
-import { axPost } from './config/axios-config'
+import api from './api/api'
 
 //import StockMovementPage from './pages/StockMovementPage';
 
@@ -30,7 +30,7 @@ const App: React.FC = () => {
 
   async function testT() {
     try {
-      const result: any = await axPost("/test", {})
+      //const result: any = await api.post("/test", {})
 
       // let printString = "";
       //   Object.keys(result).forEach(key1 => {

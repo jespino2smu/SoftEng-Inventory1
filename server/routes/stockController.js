@@ -10,10 +10,11 @@ exports.getProducts = async (req, res) => {
             "CALL GetEmptyProducts()"
         );
 
-        //console.log(result);
+        console.log("\n");
+        console.log(result);
 
-        res.status(200).json(result);
-        // res.status(201).json({ message: "Success!" });
+        //res.status(201).json({ message: "Success!" });
+        res.status(201).json(result);
 
     } catch (error) {
         console.error("Error:", error);
@@ -42,7 +43,7 @@ exports.addActivity = async (req, res) => {
             [userId, movement]
         );
 
-        const activityId = result[0][0].id;
+        const activityId = result[0][0].id; // 
         console.log("userId: " + userId);
         console.log("activityId: " + activityId);
 

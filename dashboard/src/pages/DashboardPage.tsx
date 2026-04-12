@@ -10,7 +10,7 @@ import {
   ExitToApp as Dispatch
  } from '@mui/icons-material';
 
-import { axPost } from '../config/axios-config';
+import api from '../api/api';
 
 import StockMovementPage from './StockMovementPage';
 import type {Product} from '../types/Product';
@@ -86,7 +86,7 @@ export const DashboardPage = () => {
       //   stocks: stocks,
       // });
 
-      await axPost('/stocks/add-activity', {
+      await api.post('/stocks/add-activity', {
         movement: movement,
         stocks: stocks,
       });

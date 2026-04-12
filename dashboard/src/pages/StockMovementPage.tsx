@@ -9,7 +9,7 @@ useMediaQuery,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
-import { axPost } from '../config/axios-config';
+import api from '../api/api';
 
 import { type Product} from '../types/Product';
 
@@ -55,7 +55,7 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
   }, []);
 
   async function updateData() {
-  const response = await axPost('/stocks/get-products', {
+  const response: any = await api.post('/stocks/get-products', {
     activity: 'Inventory',
   });
 
@@ -65,7 +65,6 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
     //   function(k) {
     //     alert(k + ' - ' + response[0][k]);
     // });
-
 
 
     // response[0].forEach(
@@ -78,6 +77,20 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
     //     name: item.ProductName.toLowerCase(), // normalize to lowercase
     //   });
     // });
+    //alert(response);
+
+        let n = "";
+      Object.keys(response.data).forEach(key0 => {
+        n += `${key0}: ${response.data[key0]}\n`;
+        // Object.keys(response.data[key0]).forEach(key1 => {
+        //   n += "{\n";
+        //   Object.keys(response.data[key0][key1]).forEach(key2 => {
+        //     n += `    ${key2}: ${response.data[key0][key1][key2]}\n`;
+        //   });
+        //   n += "}\n";
+        // });
+      });
+      alert(n);
 
     setSearchSuggestions(response[0]);
   }
