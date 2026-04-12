@@ -141,6 +141,15 @@ const AuthPage = ({type}: AuthPageProps) => {
         middleInital: form.middleInitial
       });
       alert("Signup successful! Please login.");
+      
+      setForm({
+        firstName: "",
+        middleInitial: "",
+        lastName: "",
+        username: "",
+        password: "",
+        confirmPassword: ""
+      });
       navigate('/login');
     } catch (err: any) {
       alert(err.message);
