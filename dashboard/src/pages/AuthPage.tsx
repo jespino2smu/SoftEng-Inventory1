@@ -1,7 +1,17 @@
-import { TextField, Button, Paper, Typography, Container, Box, Grid } from '@mui/material';
-import { useState } from 'react';
+import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
-import api from '../api/api';
+import {
+  TextField,
+  Button,
+  Box,
+  Typography,
+  IconButton,
+  InputAdornment,
+  Container,
+  Paper
+} from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import api from "../api/api";
 
 
 interface AuthPageProps {
@@ -9,20 +19,107 @@ interface AuthPageProps {
 }
 
 const AuthPage = ({type}: AuthPageProps) => {
+  const [form, setForm] = useState({
+    firstName: "",
+    middleInitial: "",
+    lastName: "",
+    username: "",
+    password: "",
+    confirmPassword: ""
+  });
+
   const navigate = useNavigate();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  
-  const [firstName, setFirstName] = useState('');
-  const [middleInitial, setMiddleInitial] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [errors, setErrors] = useState<any>([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const validatePassword = (password: string) => {
+    if (password.length < 8) {
+      return "Must be at least 8 characters long";
+    }
+    if (!/[A-Za-z]/.test(password)) {
+      return "Must include at least 1 letter";
+    }
+    if (!/\d/.test(password)) {
+      return "Must include at least 1 number";
+    }
+    if (!/[@$!%*#?&]/.test(password)) {
+      return "Must include at least 1 special character";
+    }
+    return "";
+  };
+
+  const validate = () => {
+    let newErrors: any = {};
+
+    if (!form.firstName.trim()) newErrors.firstName = "Required";
+    if (!form.lastName.trim()) newErrors.lastName = "Required";
+    if (!form.username.trim()) newErrors.username = "Required";
+
+    if (!form.password) {
+      newErrors.password = "Password is required";
+    } else {
+      const passwordError = validatePassword(form.password);
+      if (passwordError) newErrors.password = passwordError;
+    }
+
+    // Confirm password
+    if (!form.confirmPassword) {
+      newErrors.confirmPassword = "Please confirm your password";
+    } else if (form.password !== form.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+
+    return newErrors;
+  };
+
+  const handleChange = (e: { target: { name: any; value: any; }; }) => {
+    const { name, value } = e.target;
+
+    setForm({
+      ...form,
+      [name]: value
+    });
+
+    setErrors({
+      ...errors,
+      [name]: ""
+    });
+  };
+
+  const handleSubmit = (e: { preventDefault: () => void; }) => {
+    e.preventDefault();
+
+    if (type === 'Signup') {
+        const validationErrors = validate();
+        setErrors(validationErrors);
+
+        if (Object.keys(validationErrors).length === 0) {
+            handleSignup();
+        //console.log("Form submitted:", form);
+        } else {
+            return;
+        }
+    } else if (type === 'Login') {
+        let newErrors: any = {};
+        if (!form.username.trim()) newErrors.username = "Required";
+        if (!form.password) newErrors.password = "Required";
+        setErrors(newErrors);
+
+        if (Object.keys(newErrors).length === 0) {
+            handleLogin();
+        } else {
+            return;
+        }
+    }
+  };
 
   const handleLogin = async () => {
     try {
       const response = await api.post('/users/login',
       {
-        username: username,
-        password: password
+        username: form.username,
+        password: form.password
       });
       //alert("Response T: " + response.data.token);
 
@@ -30,7 +127,8 @@ const AuthPage = ({type}: AuthPageProps) => {
       navigate('/dashboard');
     } catch (err: any) {
       //alert(err.response?.data?.message || "Login failed");
-      alert(err.details);
+      //alert(err.details);
+      alert("Incorrect username or password!");
     }
   };
 
@@ -38,112 +136,154 @@ const AuthPage = ({type}: AuthPageProps) => {
     try {
       // Sending data to /api/signup
       await api.post('/users/signup', {
-        username: username,
-        password: password,
-        firstName: firstName,
-        lastName: lastName,
-        middleInital: middleInitial
+        username: form.username,
+        password: form.password,
+        firstName: form.firstName,
+        middleInital: form.middleInitial,
+        lastName: form.lastName,
       });
       alert("Signup successful! Please login.");
-      navigate('/');
+      navigate('/login');
     } catch (err: any) {
       alert(err.message);
       //alert(err.response?.data?.message || "Signup failed");
     }
   };
-
+  
   return (
-    <Grid container  sx={{ justifyContent: "center", alignItems: "center", minHeight: '100vh', bgcolor: '#f5f5f5' }}>
-      <Grid sx={{xs: 11, sm: 8, md: 4}} >
-        <Paper elevation={3} sx={{ p: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Typography variant="h4" sx={{textAlign: "center"}}>
-            {type === 'Login' && "Login"}
-            {type === 'Signup' && "Signup"}
-          </Typography>
-          
-          {type === 'Signup' &&
+    <Container maxWidth="sm">
+      <Paper elevation={3}
+        sx={{
+            padding: 4, marginTop: 8
+        }}>
+        <Typography variant="h5" gutterBottom>
+          Sign Up
+        </Typography>
+
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+          {type === 'Signup' && <TextField
+            fullWidth
+            label="First Name"
+            name="firstName"
+            margin="normal"
+            value={form.firstName}
+            onChange={handleChange}
+            error={!!errors.firstName}
+            helperText={errors.firstName}
+          />}
+
+          {type === 'Signup' && <TextField
+            fullWidth
+            label="Middle Initial"
+            name="middleInitial"
+            margin="normal"
+            inputProps={{ maxLength: 1 }}
+            value={form.middleInitial}
+            onChange={handleChange}
+          />}
+
+          {type === 'Signup' && <TextField
+            fullWidth
+            label="Last Name"
+            name="lastName"
+            margin="normal"
+            value={form.lastName}
+            onChange={handleChange}
+            error={!!errors.lastName}
+            helperText={errors.lastName}
+          />}
+
           <TextField
-            label="First Name" 
-            fullWidth 
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)} 
-          />}
-
-          {type === 'Signup' &&
-          <TextField 
-            label="Middle Initial" 
-            fullWidth 
-            value={middleInitial}
-            onChange={(e) => setMiddleInitial(e.target.value)} 
-          />}
-
-          {type === 'Signup' &&
-          <TextField 
-            label="Last Name" 
-            fullWidth 
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)} 
-          />}
-
-          <TextField 
-            label="Username" 
-            fullWidth 
-            value={username}
-            onChange={(e) => setUsername(e.target.value)} 
+            fullWidth
+            label="Username"
+            name="username"
+            margin="normal"
+            value={form.username}
+            onChange={handleChange}
+            error={!!errors.username}
+            helperText={errors.username}
           />
-          <TextField 
-            label="Password" 
-            type="password" 
-            fullWidth 
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+
+          <TextField
+            fullWidth
+            label="Password"
+            name="password"
+            margin="normal"
+            type={showPassword ? "text" : "password"}
+            value={form.password}
+            onChange={handleChange}
+            error={!!errors.password}
+            helperText={errors.password}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowPassword((prev) => !prev)} edge="end">
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
           />
-          
-          {type === 'Login' && <Button variant="contained" fullWidth onClick={handleLogin}>
+
+          {type === 'Signup' && <TextField
+            fullWidth
+            label="Confirm Password"
+            name="confirmPassword"
+            margin="normal"
+            type={showConfirmPassword ? "text" : "password"}
+            value={form.confirmPassword}
+            onChange={handleChange}
+            error={!!errors.confirmPassword}
+            helperText={errors.confirmPassword}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowConfirmPassword((prev) => !prev)} edge="end">
+                    {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
+          />}
+
+          {/* <Button
+            fullWidth
+            type="submit"
+            variant="contained"
+            sx={{ marginTop: 3 }}
+          >
+            Create Account
+          </Button> */}
+
+          {type === 'Login' && <Button variant="contained" fullWidth
+            type="submit"
+            sx={{ marginTop: 3 }}>
             Log in
           </Button>}
 
-          {type === 'Signup' && <Button variant="contained" color="secondary" fullWidth onClick={handleSignup}>
+          {type === 'Signup' && <Button variant="contained" color="secondary" fullWidth
+            type="submit"
+            sx={{ marginTop: 3 }}>
             Sign up
           </Button>}
-
+          
           {type === 'Signup' &&
-          <Button variant="text" fullWidth onClick={() => navigate('/')}>
+          <Button variant="text" fullWidth
+            sx={{ marginTop: 3 }}
+            onClick={() => navigate('/login')}>
             Already have an account? Login
           </Button>}
           
           {type === 'Login' &&
-          <Button variant="text" fullWidth onClick={() => navigate('/signup')}>
+          <Button variant="text" fullWidth
+            sx={{ marginTop: 3 }}
+            onClick={() => navigate('/signup')}>
             Need an account? Sign Up
           </Button>}
-        </Paper>
-      </Grid>
-    </Grid>
+        </Box>
+      </Paper>
+    </Container>
   );
 }
-
-// const AuthPage: React.FC<{ type: 'Login' | 'Signup' }> = ({ type }) => (
-//   <Container maxWidth="sm">
-//     <Box sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-//       <Paper elevation={3} sx={{ p: 4, width: '100%' }}>
-//         <Typography variant="h5" gutterBottom>{type}</Typography>
-//         <TextField fullWidth label="Email" margin="normal" />
-//         {type === 'Signup' &&
-//           <TextField fullWidth
-//             label="Username" type="text" margin="normal" />}
-
-//         <TextField fullWidth label="Password" type="password" margin="normal" />
-//         {type === 'Signup' &&
-//         <TextField fullWidth
-//           label="Confirm Password" type="password" margin="normal" />}
-
-//         <Button fullWidth variant="contained" sx={{ mt: 3 }}>
-//           {type === 'Signup' && "Sign up"}
-//           {type === 'Login' && "Log in"}
-//         </Button>
-//       </Paper>
-//     </Box>
-//   </Container>
-// );
 
 export default AuthPage;
