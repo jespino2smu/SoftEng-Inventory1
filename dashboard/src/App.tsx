@@ -3,14 +3,16 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import Layout from './components/Layout';
 
-import AuthPage from './pages/AuthPage';
 import { InventoryTracingPage } from './pages/InventoryTracingPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { NotificationsPage } from './pages/NotificationsPage'
 import DropdownTextField from './components/DropdownTextField';
 
 import api from './api/api'
-import SignupPage from './pages/SignupPage';
+
+// import AuthPage from './pages/AuthPage';
+// import SignupPage from './pages/SignupPage';
+import AuthPage from './pages/AuthPage';
 
 //import StockMovementPage from './pages/StockMovementPage';
 
@@ -60,8 +62,8 @@ const App: React.FC = () => {
         <Routes>
           {/* Public Auth Routes (No Sidebar/TopNav) */}
           <Route path="/login" element={<AuthPage type="Login" />} />
-          {/* <Route path="/signup" element={<AuthPage type="Signup" />} /> */}
-          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/signup" element={<AuthPage type="Signup" />} />
+          {/* <Route path="/signup" element={<SignupPage />} /> */}
 
 
 

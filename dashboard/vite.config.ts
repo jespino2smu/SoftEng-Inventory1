@@ -11,6 +11,6 @@ export default defineConfig({
 
 
   server: {
-    allowedHosts: ['basketball-ought-classification-shift.trycloudflare.com']
+    allowedHosts: ['announcement-status-postcard-queries.trycloudflare.com']
   }
 })
