@@ -11,6 +11,6 @@ export default defineConfig({
 
 
   server: {
-    allowedHosts: ['ancient-organize-interference-portland.trycloudflare.com']
+    allowedHosts: ['basketball-ought-classification-shift.trycloudflare.com']
   }
 })

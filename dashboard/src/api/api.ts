@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
 //   baseURL: 'http://localhost:5000/api'
-  baseURL: 'https://ancient-organize-interference-portland.trycloudflare.com/api'
+  baseURL: 'https://basketball-ought-classification-shift.trycloudflare.com/api'
 });
 
 // Automatically attach token to every request if it exists

@@ -10,6 +10,7 @@ import { NotificationsPage } from './pages/NotificationsPage'
 import DropdownTextField from './components/DropdownTextField';
 
 import api from './api/api'
+import SignupPage from './pages/SignupPage';
 
 //import StockMovementPage from './pages/StockMovementPage';
 
@@ -59,7 +60,8 @@ const App: React.FC = () => {
         <Routes>
           {/* Public Auth Routes (No Sidebar/TopNav) */}
           <Route path="/login" element={<AuthPage type="Login" />} />
-          <Route path="/signup" element={<AuthPage type="Signup" />} />
+          {/* <Route path="/signup" element={<AuthPage type="Signup" />} /> */}
+          <Route path="/signup" element={<SignupPage />} />
 
 
 
