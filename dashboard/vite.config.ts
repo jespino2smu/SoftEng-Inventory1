@@ -11,6 +11,6 @@ export default defineConfig({
 
 
   server: {
-    allowedHosts: ['announcement-status-postcard-queries.trycloudflare.com']
+    allowedHosts: ['wood-string-agencies-outside.trycloudflare.com']
   }
 })

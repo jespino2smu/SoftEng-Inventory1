@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Box, Typography, Button,
   Stack, 
@@ -20,6 +20,8 @@ type Movement = "None" | "Receive" | "Dispatch" | "Inventory";
 // interface DashboardPageType {
 //    setLayoutVisibility?: React.Dispatch<React.SetStateAction<boolean>>;
 // }
+
+
 export const DashboardPage = () => {
   const [stockMovement, setStockMovement] = useState<Movement>("None");
 
@@ -31,6 +33,8 @@ export const DashboardPage = () => {
   const [displayDispatchStocks, setDisplayDispatchStocks] = useState<boolean>(false);
   const [displayStockInventory, setDisplayStockInventory] = useState<boolean>(false);
 
+  const [role, setRole] = useState<string>('');
+
   const buttonIcon = {fontSize: '40px', };
 
   const buttonText = {
@@ -41,6 +45,16 @@ export const DashboardPage = () => {
       xs: '16px',
       sm: '18px'
   }};
+
+  useEffect(() => {
+    getRole();
+  }, [])
+    
+  async function getRole() {
+    const response = await api.post('/users/role');
+    setRole(response.data.role);
+    //alert(response.data.role);
+  }
 
 
   // useEffect(() => {
@@ -131,13 +145,13 @@ export const DashboardPage = () => {
   }
   return (
     <>
-        <StockMovementPage
+        {role === 'Manager' &&<StockMovementPage
           display={displayReceiveStocks}
           submitLabel='Receive'
           data={receiveStocks}
           setData={setReceiveStocks}
           onSubmit={() => onSubmit("Receive")}
-          onReturn={onReturn} />
+          onReturn={onReturn} />}
           
         <StockMovementPage
           display={displayStockInventory}
@@ -164,13 +178,13 @@ export const DashboardPage = () => {
 
     {stockMovement === 'None' &&
         <Stack spacing={'20px'} sx={{marginTop: '10px'}}>
-          <Button variant="contained"
+          {role === 'Manager' && <Button variant="contained"
             onClick={() => {togglePage("Receive");}}>
             <Receive style={buttonIcon} />
             <Typography
               sx={buttonText}>Receive Stocks
             </Typography>
-          </Button>
+          </Button>}
 
           <Button variant="contained"
             onClick={() => togglePage("Dispatch")}>

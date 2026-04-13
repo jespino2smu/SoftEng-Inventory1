@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Box, AppBar, Toolbar, IconButton, Typography, Drawer, List, 
   ListItem, ListItemButton, ListItemIcon, ListItemText,
@@ -11,6 +11,7 @@ import {
 } from '@mui/icons-material';
 
 import { useNavigate } from 'react-router-dom';
+import api from '../api/api';
 
 
   const drawerWidth = 240;
@@ -24,6 +25,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
+  const [role, setRole] = useState<string>('');
+
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -35,9 +38,19 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 const navItems = [
   { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
-  { text: 'Inventory Tracing', icon: <Assessment />, path: '/tracing' },
-  { text: 'Notifications', icon: <Notifications />, path: '/notifications' },
+  { text: 'Inventory Tracing', icon: <Assessment />, path: '/tracing', managerOnly: true },
+  { text: 'Notifications', icon: <Notifications />, path: '/notifications'},
 ];
+
+  useEffect(() => {
+    getRole();
+  }, [])
+
+  async function getRole() {
+    const response = await api.post('/users/role');
+    setRole(response.data.role);
+    //alert(response.data.role);
+  }
 
   return (
     <>
@@ -61,10 +74,15 @@ const navItems = [
                 onClose={() => handleMenuClose()}
               >
                 {navItems.map((item) => (
-                  <MenuItem key={item.text} onClick={() => handleMenuClose(item.path)}>
-                    <ListItemIcon>{item.icon}</ListItemIcon>
-                    <ListItemText>{item.text}</ListItemText>
-                  </MenuItem>
+                  !(item.managerOnly && role !== 'Manager') ? (
+                    <MenuItem key={item.text} onClick={() => handleMenuClose(item.path)}>
+                      <ListItemIcon>{item.icon}</ListItemIcon>
+                      {/* <ListItemText>{item.text}</ListItemText> */}
+                      <ListItemText>{item.managerOnly && role}</ListItemText>
+                    </MenuItem>
+                  ) : (
+                    <div></div>
+                  )
                 ))}
               </Menu>
             </>
@@ -100,12 +118,16 @@ const navItems = [
           <Box sx={{ overflow: 'auto' }}>
             <List>
               {navItems.map((item) => (
-                <ListItem key={item.text} disablePadding>
-                  <ListItemButton onClick={() => navigate(item.path)}>
-                    <ListItemIcon>{item.icon}</ListItemIcon>
-                    <ListItemText primary={item.text} />
-                  </ListItemButton>
-                </ListItem>
+                  !(item.managerOnly && role !== 'Manager') ? (
+                    <ListItem key={item.text} disablePadding>
+                      <ListItemButton onClick={() => navigate(item.path)}>
+                        <ListItemIcon>{item.icon}</ListItemIcon>
+                        <ListItemText primary={item.text} />
+                      </ListItemButton>
+                    </ListItem>
+                  ) : (
+                    <div></div>
+                  )
               ))}
             </List>
           </Box>
