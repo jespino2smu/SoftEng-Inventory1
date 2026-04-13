@@ -15,8 +15,11 @@ import { type Product} from '../types/Product';
 
 import { SearchField } from "../components/SearchField";
 import AddIcon from "@mui/icons-material/Add";
+import AssignmentAddIcon from '@mui/icons-material/AssignmentAdd';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import IncrementField from '../components/IncrementField';
 
+import { getRole } from '../api/api';
 
 interface StockMovementProps {
   display: boolean;
@@ -33,6 +36,8 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
 
   const [open, setOpen] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState<Product[]>([]);
+
+  const [role, setRole] = useState<string>('');
   
   const [currentProduct, setCurrentProduct] = useState<Product>({
     ProductId: 0,
@@ -50,8 +55,9 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
 
 
   useEffect(() => {
-    
     updateData();
+    const r: any = getRole();
+    setRole(r);
   }, []);
 
   async function updateData() {
@@ -144,20 +150,35 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
             paddingTop: '15px'
           }}
         >
-
-          <Button
-            variant="contained"
-            size="small"
-            onClick={handleOpen}
-            sx={{
-              height: '36px',
-              padding: 0,
-              margin: '0',
-              width: { xs: '120px', sm: '120px' }
-            }}>
-            <AddIcon />
-            Add Item
-          </Button>
+          <Stack direction="row" spacing="3px">
+            <Button
+              variant="contained"
+              size="small"
+              onClick={handleOpen}
+              sx={{
+                height: '36px',
+                padding: 0,
+                margin: '0',
+                width: { xs: '30px', sm: '30px' }
+              }}>
+              <AssignmentAddIcon />
+              {isMobile? "" : "Add Item"}
+            </Button>
+            
+            <Button
+              variant="contained"
+              size="small"
+              // onClick={handleOpen}
+              sx={{
+                height: '36px',
+                padding: 0,
+                margin: '0',
+                width: { xs: '30px', sm: '30px' }
+              }}>
+              <PersonAddIcon />
+              {isMobile? "" : "Add Staff"}
+            </Button>
+          </Stack>
 
           <Button variant="contained"
             onClick={() =>{

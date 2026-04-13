@@ -161,13 +161,13 @@ export const DashboardPage = () => {
           onSubmit={() => onSubmit("Inventory")}
           onReturn={onReturn} />
 
-        <StockMovementPage
+        {role === 'Manager' &&<StockMovementPage
           display={displayDispatchStocks}
           submitLabel='Dispatch'
           data={dispatchStocks}
           setData={setDispatchStocks}
           onSubmit={() => onSubmit("Dispatch")}
-          onReturn={onReturn} />
+          onReturn={onReturn} />}
 
         <Box sx={{ 
         display: 'flex', 
@@ -186,13 +186,13 @@ export const DashboardPage = () => {
             </Typography>
           </Button>}
 
-          <Button variant="contained"
+          {role === 'Manager' && <Button variant="contained"
             onClick={() => togglePage("Dispatch")}>
             <Dispatch style={buttonIcon} />
             <Typography
               sx={buttonText}>Dispatch Stocks
             </Typography>
-          </Button>
+          </Button>}
 
           <Button variant="contained"
             onClick={() => togglePage("Inventory")}>

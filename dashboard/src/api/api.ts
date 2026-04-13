@@ -18,4 +18,10 @@ export const logout = () => {
   localStorage.setItem('token', "");
 }
 
+export async function getRole() {
+  return await api.post('/users/role');
+  //setRole(response.data.role);
+  //alert(response.data.role);
+}
+
 export default api;
