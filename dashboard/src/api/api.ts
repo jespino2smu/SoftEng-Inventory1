@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
 //   baseURL: 'http://localhost:5000/api'
-  baseURL: 'https://wood-string-agencies-outside.trycloudflare.com/api'
+  baseURL: 'https://pearl-outlets-compiler-lets.trycloudflare.com/api'
 });
 
 // Automatically attach token to every request if it exists
@@ -23,5 +23,6 @@ export async function getRole() {
   //setRole(response.data.role);
   //alert(response.data.role);
 }
+
 
 export default api;

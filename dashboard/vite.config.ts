@@ -9,8 +9,7 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] })
   ],
 
-
   server: {
-    allowedHosts: ['wood-string-agencies-outside.trycloudflare.com']
+    allowedHosts: ['pearl-outlets-compiler-lets.trycloudflare.com']
   }
 })

@@ -23,6 +23,11 @@ stockRoutes.setPool(database.pool);
 app.use('/api/stocks', stockRoutes);
 
 // ----------------------------
+const notificationRoutes = require('./routes/notificationRoutes');
+notificationRoutes.setPool(database.pool);
+app.use('/api/notifications', notificationRoutes);
+
+// ----------------------------
 
 app.post('/api/test', async (req, res) => {
   console.log("Ran Test!");
