@@ -5,7 +5,7 @@ import Layout from './components/Layout';
 
 import { InventoryTracingPage } from './pages/InventoryTracingPage';
 import { DashboardPage } from './pages/DashboardPage';
-import { NotificationsPage } from './pages/NotificationsPage'
+import NotificationPage from './test/NotificationPage'
 import DropdownTextField from './components/DropdownTextField';
 
 import api from './api/api'
@@ -13,6 +13,9 @@ import api from './api/api'
 // import AuthPage from './pages/AuthPage';
 // import SignupPage from './pages/SignupPage';
 import AuthPage from './pages/AuthPage';
+import ProtectedRoute from './pages/ProtectedRoute';
+
+import CreateNotification from './test/CreateNotification';
 
 //import StockMovementPage from './pages/StockMovementPage';
 
@@ -73,40 +76,17 @@ const App: React.FC = () => {
           {/* <Route path="/drop-text" element={<DropdownTextField />} /> */}
           {/* <Route path="/test" element={<LogTest />} /> */}
           {/* <Route path="/movement" element={<StockMovementPage />} /> */}
+          <Route path="/notif" element={<NotificationPage />} />
+          <Route path="/alert" element={<CreateNotification />} />
 
 
 
 
-
-
-
-          {/* Protected Routes (Wrapped in Layout) */}
-          <Route
-            path="/"
-            element={
-              <Layout>
-                {/* The Outlet-like behavior happens by passing 
-                    children to the Layout component */}
-                <Navigate to="/dashboard" replace />
-              </Layout>
-            }
-          />
-          
-          <Route path="/dashboard" element={
-              <Layout><DashboardPage/></Layout>
-              // <Layout visibility={visibleLayout}><DashboardPage setLayoutVisibility={setVisibleLayout}/></Layout>
-            } />
-
-          <Route path="/notifications" element={
-              <Layout><NotificationsPage /> </Layout>
-            } />
-          
-          <Route path="/tracing" element={
-              <Layout><InventoryTracingPage /></Layout>
-            } />
-
-          {/* Fallback for 404s
-          <Route path="*" element={<Navigate to="/login" />} /> */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<Layout><DashboardPage/></Layout>} />
+            <Route path="/notifications" element={<Layout><NotificationPage /> </Layout>} />
+            <Route path="/tracing" element={<Layout><InventoryTracingPage /></Layout>} />
+          </Route>
         </Routes>
       </Router>
     </ThemeProvider>

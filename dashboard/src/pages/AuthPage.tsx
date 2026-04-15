@@ -58,8 +58,8 @@ const AuthPage = ({type}: AuthPageProps) => {
     if (!form.password) {
       newErrors.password = "Password is required";
     } else {
-      const passwordError = validatePassword(form.password);
-      if (passwordError) newErrors.password = passwordError;
+      //const passwordError = validatePassword(form.password);
+      //if (passwordError) newErrors.password = passwordError;
     }
 
     // Confirm password
@@ -85,6 +85,17 @@ const AuthPage = ({type}: AuthPageProps) => {
       [name]: ""
     });
   };
+
+  const clear = () => {
+    setForm({
+    firstName: "",
+    middleInitial: "",
+    lastName: "",
+    username: "",
+    password: "",
+    confirmPassword: ""
+  });
+  }
 
   const handleSubmit = (e: { preventDefault: () => void; }) => {
     e.preventDefault();
@@ -123,7 +134,8 @@ const AuthPage = ({type}: AuthPageProps) => {
       //alert("Response T: " + response.data.token);
 
       localStorage.setItem('token', response.data.token);
-      navigate('/dashboard');
+      clear();
+      navigate('/');
     } catch (err: any) {
       //alert(err.response?.data?.message || "Login failed");
       alert(err.details);
@@ -142,14 +154,7 @@ const AuthPage = ({type}: AuthPageProps) => {
       });
       alert("Signup successful! Please login.");
       
-      setForm({
-        firstName: "",
-        middleInitial: "",
-        lastName: "",
-        username: "",
-        password: "",
-        confirmPassword: ""
-      });
+      clear();
       navigate('/login');
     } catch (err: any) {
       alert(err.message);
@@ -277,14 +282,20 @@ const AuthPage = ({type}: AuthPageProps) => {
           {type === 'Signup' &&
           <Button variant="text" fullWidth
             sx={{ marginTop: 3 }}
-            onClick={() => navigate('/login')}>
+            onClick={() => {
+              clear();
+              navigate('/login');
+              }}>
             Already have an account? Login
           </Button>}
           
           {type === 'Login' &&
           <Button variant="text" fullWidth
             sx={{ marginTop: 3 }}
-            onClick={() => navigate('/signup')}>
+            onClick={() => {
+              clear();
+              navigate('/signup');
+            }}>
             Need an account? Sign Up
           </Button>}
         </Box>
