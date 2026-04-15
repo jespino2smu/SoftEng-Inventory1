@@ -1,28 +1,21 @@
 [
-  {
-    "id": 1,
-    "type": "red",
+  { 
+    "id": 1, 
+    "type": "red", 
     "message": "Critical Server Error: Database unreachable.",
     "timestamp": "2026-04-15T08:30:00Z"
   },
-  {
-    "id": 2,
-    "type": "yellow",
+  { 
+    "id": 2, 
+    "type": "yellow", 
     "message": "Warning: Disk space is at 85% capacity.",
     "timestamp": "2026-04-15T09:15:00Z"
   },
-  {
-    "id": 3,
-    "type": "info",
+  { 
+    "id": 3, 
+    "type": "info", 
     "message": "System update scheduled for 2:00 AM.",
     "timestamp": "2026-04-15T10:00:00Z",
-    "isRead": true
-  },
-  {
-    "id": 1776223040501,
-    "type": "red",
-    "message": "ss",
-    "timestamp": "2026-04-15T03:17:20.501Z",
     "isRead": false
   }
 ]
