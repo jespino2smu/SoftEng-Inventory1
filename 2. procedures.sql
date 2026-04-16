@@ -257,8 +257,22 @@ DELIMITER ;
 
 -- CALL GetHandledStocks(1);
 
-/* ===================================================
 
+-- ===================================================
+
+DELIMITER //
+CREATE PROCEDURE CheckStockDiscrepancies()
+BEGIN
+	SELECT ProductId, ProductName, Inventory, StockIn, StockOut, StockIn - StockOut AS StockBalance,
+		IF(StockIn - StockOut >= 0, False, True) AS BalanceDiscrepancy,
+		IF(StockIn - StockOut = Inventory, False, True) AS CountDiscrepancy
+	FROM product;
+END //
+DELIMITER ;
+
+-- CALL CheckStockDiscrepancies();
+
+/* ===================================================
 DEFAULT VALUES:
 */
 
