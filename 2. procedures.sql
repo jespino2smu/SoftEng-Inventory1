@@ -164,10 +164,41 @@ CREATE PROCEDURE AddHandledStock(
 	IN ActivityId INT, IN ProductId INT, IN Quantity DECIMAL(10,0)
 )
 BEGIN
+	DECLARE ActivityId_ToAdd INT;
+	DECLARE ProductId_ToAdd INT;
+    DECLARE ActivityType_ToAdd ENUM('Receive', 'Dispatch', 'Inventory');
+    
+    SET ActivityId_ToAdd = ActivityId;
+    SET ProductId_ToAdd = ProductId;
+    
 	INSERT INTO handled_stock (ActivityId, ProductId, Quantity)
     VALUES (ActivityId, ProductId, Quantity);
+    
+	SELECT A.ActivityType
+    INTO ActivityType_ToAdd
+	FROM stock_activity AS A
+	WHERE A.ActivityId = ActivityId_ToAdd
+    LIMIT 1;
+    
+	UPDATE product AS P
+	SET
+		P.StockIn = CASE 
+			WHEN ActivityType_ToAdd = 'Receive' THEN P.StockIn + Quantity
+			ELSE P.StockIn
+		END,
+		P.StockOut = CASE 
+			WHEN ActivityType_ToAdd = 'Dispatch' THEN P.StockOut + Quantity
+			ELSE P.StockOut
+		END,
+		P.Inventory = CASE 
+			WHEN ActivityType_ToAdd = 'Inventory' THEN Quantity
+			ELSE P.Inventory
+		END
+	WHERE P.ProductId = ProductId_ToAdd;
+    -- SELECT ActivityId_ToAdd, ActivityType_ToAdd;
 END //
 DELIMITER ;
+
 /* =================================================== */
 
 DELIMITER //
