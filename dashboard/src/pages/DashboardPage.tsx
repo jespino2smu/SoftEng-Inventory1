@@ -104,6 +104,12 @@ export const DashboardPage = () => {
         movement: movement,
         stocks: stocks,
       });
+
+
+      await api.post('/stocks/add-activity', {
+        movement: movement,
+        stocks: stocks,
+      });
   }
 
   
