@@ -38,6 +38,8 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
   const [searchSuggestions, setSearchSuggestions] = useState<Product[]>([]);
 
   const [role, setRole] = useState<string>('');
+
+  const [searchFieldValidity, setSearchFieldValidity] = useState<boolean>(false);
   
   const [currentProduct, setCurrentProduct] = useState<Product>({
     ProductId: 0,
@@ -159,7 +161,7 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
                 height: '36px',
                 padding: 0,
                 margin: '0',
-                width: { xs: '30px', sm: '30px' }
+                width: isMobile? '30px' : 'fit-content'
               }}>
               <AssignmentAddIcon />
               {isMobile? "" : "Add Item"}
@@ -173,7 +175,7 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
                 height: '36px',
                 padding: 0,
                 margin: '0',
-                width: { xs: '30px', sm: '30px' }
+                width: isMobile? '30px' : 'fit-content'
               }}>
               <PersonAddIcon />
               {isMobile? "" : "Add Staff"}
@@ -261,6 +263,7 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
 
             <SearchField
                 data={searchSuggestions}
+                setValidity={setSearchFieldValidity}
                 onSuggestionPicked={handleSearchSuggestionClick}/>
 
             <Stack direction="row" justifyContent="center">
@@ -284,7 +287,7 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
               }}
             onClick={handleAdd} 
             variant="contained" 
-            disabled={!currentProduct.Quantity}
+            disabled={!currentProduct.Quantity || searchFieldValidity === false}
           >
             Add Item
           </Button>

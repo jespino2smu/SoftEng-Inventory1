@@ -23,7 +23,7 @@ const IncrementField: React.FC<NumberStepperProps> = ({ max, value, setValue, no
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const numericValue = Number(e.target.value);
     
-    if (e.target.value === '') {
+    if (e.target.value === '' || e.target.value === '.') {
       setValue("");
     } else if
     (!isNaN(Number(
@@ -31,6 +31,8 @@ const IncrementField: React.FC<NumberStepperProps> = ({ max, value, setValue, no
       )) &&
       e.target.value[e.target.value.length - 1] === '.' ) {
       setValue(e.target.value);
+    } else if (isNaN(Number(e.target.value))) {
+
     } else if (numericValue > max) {
       setValue(max.toString());
     } else {
