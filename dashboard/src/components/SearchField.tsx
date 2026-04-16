@@ -53,7 +53,10 @@ export const SearchField: React.FC<SearchComponentProps> = ({ data, setValidity,
 
   function validateField(value: string) {
     //alert(value);
-    if (options.some(option => option.Name === value)) {
+    const product = options.find(option => option.Name === value);
+
+    if (product) {
+      onSuggestionPicked(product.ProductId, product.Name);
       setValidity(true);
     } else {
       setValidity(false);
