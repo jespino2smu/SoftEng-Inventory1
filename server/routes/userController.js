@@ -12,17 +12,19 @@ exports.login = async (req, res) => {
     }
 
     try {
-        const [rows] = await exports.pool.execute('SELECT StaffId as Id, Username, Password, FirstName, LastName, MiddleInitial, Role FROM staff WHERE username=?', [username]);
+        const [rows] = await exports.pool.execute('SELECT StaffId as Id, Username, Password, FirstName, LastName, MiddleInitial, Role FROM staff WHERE Username=?', [username]);
 
-        if (rows[0].length === 0) {
-            return res.status(401).json({ message: "Invalid email or password" });
+        if (!rows[0]) {
+            console.log("\n\nInvalid\n");
+            return res.status(200).json({  invalidCredential: true, message: "Invalid email or password" });
         }
+        console.log("\nContinued");
 
         const selectedPassword = rows[0].Password;
         const isMatch = await bcrypt.compare(password, selectedPassword);
 
         if (!isMatch) {
-            return res.status(401).json({ message: "Invalid username or password" });
+            return res.status(200).json({ invalidCredential: true, message: "Invalid username or password" });
         } else {
           const token = generateToken(rows[0].Id, rows[0].Role);
           res.status(200).json({ token });
@@ -54,10 +56,12 @@ exports.signUp = async (req, res) => {
 
     try {
         let [matchedUserCount] = await exports.pool.execute(
-            'SELECT COUNT(Username) FROM staff WHERE username=?',
-            [username]
+            'SELECT COUNT(Username) as count FROM staff WHERE Username=?',
+            [username.trim()]
         );
-        if (matchedUserCount[0].value > 0) {
+
+        //console.log(`\nMatched user[0]: ${matchedUserCount[0].count}\n`)
+        if (matchedUserCount[0].count > 0) {
             return res.status(400).json({ message: "Username already exists" });
         }
 

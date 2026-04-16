@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-//   baseURL: 'http://localhost:5000/api'
-  baseURL: 'https://pearl-outlets-compiler-lets.trycloudflare.com/api'
+  // baseURL: 'http://localhost:8080/api'
+  baseURL: 'https://cradle-coast-benefits-zus.trycloudflare.com/api'
 });
 
 // Automatically attach token to every request if it exists

@@ -126,11 +126,17 @@ const AuthPage = ({type}: AuthPageProps) => {
   
   const handleLogin = async () => {
     try {
+
       const response = await api.post('/users/login',
       {
         username: form.username,
         password: form.password
       });
+      if (response.data.invalidCredential) {
+        alert(response.data.message);
+        return;
+      }
+
       //alert("Response T: " + response.data.token);
 
       localStorage.setItem('token', response.data.token);
@@ -138,27 +144,31 @@ const AuthPage = ({type}: AuthPageProps) => {
       navigate('/');
     } catch (err: any) {
       //alert(err.response?.data?.message || "Login failed");
-      alert(err.details);
+      //alert(err.details);
     }
   };
 
   const handleSignup = async () => {
     try {
       // Sending data to /api/signup
-      await api.post('/users/signup', {
+      const response = await api.post('/users/signup', {
         username: form.username,
         password: form.password,
         firstName: form.firstName,
         lastName: form.lastName,
         middleInital: form.middleInitial
       });
+      alert(response.data);
       alert("Signup successful! Please login.");
+      
       
       clear();
       navigate('/login');
     } catch (err: any) {
-      alert(err.message);
-      //alert(err.response?.data?.message || "Signup failed");
+      //alert(err.message);
+
+
+      alert(err.response?.data?.message || "Signup failed");
     }
   };
   

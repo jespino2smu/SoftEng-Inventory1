@@ -10,6 +10,6 @@ export default defineConfig({
   ],
 
   server: {
-    allowedHosts: ['pearl-outlets-compiler-lets.trycloudflare.com']
+    allowedHosts: ['cradle-coast-benefits-zus.trycloudflare.com']
   }
 })
