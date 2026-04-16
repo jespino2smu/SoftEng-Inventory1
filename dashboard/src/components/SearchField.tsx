@@ -53,7 +53,11 @@ export const SearchField: React.FC<SearchComponentProps> = ({ data, setValidity,
 
   function validateField(value: string) {
     //alert(value);
-    setValidity(false);
+    if (options.some(option => option.Name === value)) {
+      setValidity(true);
+    } else {
+      setValidity(false);
+    }
     setInputValue(value);
   }
 
