@@ -27,6 +27,8 @@ const AuthPage = ({type}: AuthPageProps) => {
     confirmPassword: ""
   });
 
+  const [loginAttempts, setLoginAttempts] = useState(5);
+
   const navigate = useNavigate();
   const [errors, setErrors] = useState<any>([]);
   const [showPassword, setShowPassword] = useState(false);
@@ -48,27 +50,46 @@ const AuthPage = ({type}: AuthPageProps) => {
     return "";
   };
 
+  const validateHasLetters = (str: string) => /[\p{L}\p{M}]/u.test(str);
+  //const validateNameChar = (str: string) => /^[\p{L}\p{M}\s]+$/u.test(str);
+  const validateNameCharWithPeriod = (str: string) => /^[\p{L}\p{M}\s.]+$/u.test(str);
+  const validateNameCharWithDash = (str: string) => /^[\p{L}\p{M}\s-]+$/u.test(str);
+
   const validate = () => {
     let newErrors: any = {};
 
     if (!form.firstName.trim()) newErrors.firstName = "Required";
+    else if (!validateNameCharWithPeriod(form.firstName)) newErrors.firstName = "Only letters, spaces, and periods allowed";
+    else if (!validateHasLetters(form.firstName)) newErrors.firstName = "Requires at least 1 letter";
+    
     if (!form.lastName.trim()) newErrors.lastName = "Required";
+    else if (!validateNameCharWithDash(form.lastName)) newErrors.lastName = "Only letters, spaces, and dashes allowed";
+    else if (!validateHasLetters(form.lastName)) newErrors.lastName = "Requires at least 1 letter";
+
+    if (!form.middleInitial.trim()) { }
+    else if (form.middleInitial && !validateHasLetters(form.middleInitial)) newErrors.middleInitial = "Only letter allowed";
+
     if (!form.username.trim()) newErrors.username = "Required";
 
     if (!form.password) {
       newErrors.password = "Password is required";
     } else {
-      //const passwordError = validatePassword(form.password);
-      //if (passwordError) newErrors.password = passwordError;
+      const passwordError = validatePassword(form.password);
+      if (passwordError) newErrors.password = passwordError;
     }
 
-    // Confirm password
     if (!form.confirmPassword) {
       newErrors.confirmPassword = "Please confirm your password";
     } else if (form.password !== form.confirmPassword) {
+      newErrors.password = "Passwords do not match";
       newErrors.confirmPassword = "Passwords do not match";
     }
 
+    let s = "";
+    Object.keys(newErrors).forEach(keys => {
+      s+= keys + ": " + newErrors[keys] + "\n";
+    })
+    //alert("Keys total: " + !Object.keys(newErrors).length + "\n" + s);
     return newErrors;
   };
 
@@ -97,17 +118,24 @@ const AuthPage = ({type}: AuthPageProps) => {
   });
   }
 
-  const handleSubmit = (e: { preventDefault: () => void; }) => {
+  const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
 
     if (type === 'Signup') {
         const validationErrors = validate();
         setErrors(validationErrors);
 
-        if (Object.keys(validationErrors).length === 0) {
+
+        const condition1 = Object.keys(validationErrors).length === 0;
+        const condition2 = await !handleCheckExistingStaff();
+
+        //alert("Validation Errors: " + condition1 + "\nCheck Existing Staff: " + !condition2);
+
+        if (Object.keys(validationErrors).length === 0 && !condition2) {
             handleSignup();
         //console.log("Form submitted:", form);
         } else {
+            //alert("Did not signup.");
             return;
         }
     } else if (type === 'Login') {
@@ -124,27 +152,81 @@ const AuthPage = ({type}: AuthPageProps) => {
     }
   };
   
-  const handleLogin = async () => {
+  const handleCheckExistingStaff = async () => {
     try {
+      const response = await api.post('/users/staff-exists',
+      {
+        username: form.username,
+        firstName: form.firstName,
+        lastName: form.lastName
+      });
+      //alert("Response T: " + response.data.token);
+      let newErrors: any = {};
+      
+      //alert("hasExistingStaff: " + hasExistingStaff);
+      if (response.data.exists === false) {
+        localStorage.setItem('token', response.data.token);
+        //alert("Signup false!");
+        return false;
+      } else if (response.data.exists === true) {
+        if (response.data.type === "username" || response.data.type === "both") {
+          newErrors.username = "Username already exists";
+        } else if (response.data.type === "name" || response.data.type === "both") {
+          newErrors.firstName = "Name already exists";
+          newErrors.lastName = "Name already exists";
+        }
+        setErrors(newErrors);
+        //alert("Signup true: " + response.data.type + "!!!!");
+        return true;
+      }
 
-      const response = await api.post('/users/login',
+    } catch (err: any) {
+      //alert(err.response?.data?.message || "Login failed");
+      //alert(err.details);
+      alert("Network error, try again later");
+    }
+  };
+
+  const handleLogin = async () => {
+    let response: any;
+    try {
+      response = await api.post('/users/login',
       {
         username: form.username,
         password: form.password
       });
-      if (response.data.invalidCredential) {
-        alert(response.data.message);
+      //alert("Response T: ");
+
+        //alert("Status: " + response.data.status);
+      if (response.data.status === "userNotFound") {
+        alert("User not found");
         return;
+      } else if (response.data.status === "invalidCredentials") {
+        alert("Incorrect username or password");
+        setLoginAttempts(prev => prev - 1);
+        return;
+      } else if (response.data.status === "success") {
+        localStorage.setItem('token', response.data.token);
+        alert("Login successful!");
+        clear();
+        navigate('/');
       }
 
-      //alert("Response T: " + response.data.token);
-
-      localStorage.setItem('token', response.data.token);
-      clear();
-      navigate('/');
+      // if (response.data.status === "false" || response.data.status === "userNotFound" || response.data.status === "invalidCredentials") {
+      //   alert("Incorrect username or password");
+      //   setLoginAttempts(prev => prev - 1);
+      //   return;
+      // } else if (response.data.status === "success") {
+      //   localStorage.setItem('token', response.data.token);
+      //   alert("Login successful!");
+      //   clear();
+      //   navigate('/');
+      // }
     } catch (err: any) {
       //alert(err.response?.data?.message || "Login failed");
       //alert(err.details);
+      //alert(response?.data?.success);
+      alert("Network error, try again later");
     }
   };
 
@@ -166,13 +248,14 @@ const AuthPage = ({type}: AuthPageProps) => {
       navigate('/login');
     } catch (err: any) {
       //alert(err.message);
-
-
-      alert(err.response?.data?.message || "Signup failed");
+      alert("Network error, try again later");
+      //alert(err.response?.data?.message || "Signup failed");
     }
   };
   
   return (
+    <>
+    {loginAttempts > 0 ? (
     <Container maxWidth="sm">
       <Paper elevation={3}
         sx={{
@@ -202,6 +285,8 @@ const AuthPage = ({type}: AuthPageProps) => {
             inputProps={{ maxLength: 1 }}
             value={form.middleInitial}
             onChange={handleChange}
+            error={!!errors.middleInitial}
+            helperText={errors.middleInitial}
           />}
 
           {type === 'Signup' && <TextField
@@ -310,7 +395,9 @@ const AuthPage = ({type}: AuthPageProps) => {
           </Button>}
         </Box>
       </Paper>
-    </Container>
+    </Container>) : (<p>Too many failed login attempts. Please try again later.</p>)
+    }
+    </>
   );
 }
 

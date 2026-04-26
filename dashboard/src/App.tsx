@@ -9,6 +9,7 @@ import NotificationPage from './test/NotificationPage'
 import DropdownTextField from './components/DropdownTextField';
 
 import api from './api/api'
+import { logout } from './api/api';
 
 // import AuthPage from './pages/AuthPage';
 // import SignupPage from './pages/SignupPage';
@@ -16,6 +17,7 @@ import AuthPage from './pages/AuthPage';
 import ProtectedRoute from './pages/ProtectedRoute';
 
 import CreateNotification from './test/CreateNotification';
+import LogoutPage from './pages/LogoutPage';
 
 //import StockMovementPage from './pages/StockMovementPage';
 
@@ -66,6 +68,7 @@ const App: React.FC = () => {
           {/* Public Auth Routes (No Sidebar/TopNav) */}
           <Route path="/login" element={<AuthPage type="Login" />} />
           <Route path="/signup" element={<AuthPage type="Signup" />} />
+          <Route path="/logout" element={<LogoutPage />} />
           {/* <Route path="/signup" element={<SignupPage />} /> */}
 
 

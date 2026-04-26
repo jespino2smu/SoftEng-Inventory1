@@ -4,6 +4,58 @@ const { generateToken } = require('../tokens');
 const saltRounds = 10;
 exports.pool = null;
 
+exports.staffExists = async (req, res) => {
+    const { username, firstName, lastName } = req.body;
+
+    if (!username) {
+        return res.status(400).json({ message: "Username is required" });
+    }
+
+    try {
+        const [rows] = await exports.pool.execute(`
+            SELECT
+                SUM(IF(Username=?, 1, 0)) AS 'duplicateUsername',
+                SUM(IF(FirstName=? AND LastName=?, 1, 0)) AS 'duplicateName'
+            FROM staff;`, [username, firstName, lastName]
+        );
+
+        // if (rows[0].length === 0) {
+        //     return res.status(404).json({ message: "Username not found" });
+        // }
+
+        if (rows[0].duplicateUsername > 0 && rows[0].duplicateName > 0) {
+            return res.status(200).json({ exists: true, type: "both" });
+        } else if (rows[0].duplicateUsername > 0) {
+            return res.status(200).json({ exists: true, type: "username" });
+        } else if (rows[0].duplicateName > 0) {
+            return res.status(200).json({ exists: true, type: "name" });
+        }
+
+        console.log("\n");
+        console.log(rows[0]);
+        console.log("\n");
+        res.status(200).json({ exists: false });
+
+        // const selectedPassword = rows[0].Password;
+        // const isMatch = await bcrypt.compare(password, selectedPassword);
+
+        // if (!isMatch) {
+        //     return res.status(401).json({ message: "Invalid username or password" });
+        // } else {
+        //   const token = generateToken(rows[0].Id, rows[0].Role);
+        //   res.status(200).json({ token });
+        // }
+
+        
+        //console.log("Status code Q: " +res.statusCode);
+        // console.log(rows[0].Role);
+
+    } catch (error) {
+        console.error("Database Error:", error);
+        res.status(500).json({ message: "Internal server error", details: error.message });
+    }
+};
+
 exports.login = async (req, res) => {
     const { username, password } = req.body;
 
@@ -12,22 +64,39 @@ exports.login = async (req, res) => {
     }
 
     try {
-        const [rows] = await exports.pool.execute('SELECT StaffId as Id, Username, Password, FirstName, LastName, MiddleInitial, Role FROM staff WHERE Username=?', [username]);
+        //const [rows] = await exports.pool.execute('SELECT StaffId as Id, Username, Password, FirstName, LastName, MiddleInitial, Role FROM staff WHERE username=?', [username]);
 
-        if (!rows[0]) {
-            console.log("\n\nInvalid\n");
-            return res.status(200).json({  invalidCredential: true, message: "Invalid email or password" });
+        const [rows] = await exports.pool.execute('CALL Login(?)', [username]);
+
+
+        if (!rows[0].length) {
+            return res.status(500).json({ status: "invalid" });
         }
-        console.log("\nContinued");
+        console.log("Length: " + rows[0].length);
 
-        const selectedPassword = rows[0].Password;
+
+        if (rows[0][0].NotFound === 1) {
+            return res.status(200).json({ status: "userNotFound", message: "Invalid username or password" });
+        }
+
+        // if (rows.length === 0) {
+        //     //console.log("No user found with username: " + username);
+        //     return res.status(200).json({ status: "false", message: "Invalid username or password" });
+        // }
+        //console.log(rows[0].Password);
+
+        const selectedPassword = rows[0][0].Password;
         const isMatch = await bcrypt.compare(password, selectedPassword);
 
+        console.log(isMatch);
+        console.log(rows[0][0].Password);
         if (!isMatch) {
-            return res.status(200).json({ invalidCredential: true, message: "Invalid username or password" });
+            console.log("Mismatch!");
+            return res.status(200).json({ status: "invalidCredentials", message: "Invalid username or password" });
         } else {
+            console.log("Matched!");
           const token = generateToken(rows[0].Id, rows[0].Role);
-          res.status(200).json({ token });
+          res.status(200).json({ status: "success", token });
         }
 
         
