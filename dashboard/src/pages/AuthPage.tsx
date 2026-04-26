@@ -48,24 +48,38 @@ const AuthPage = ({type}: AuthPageProps) => {
     return "";
   };
 
+  const validateHasLetters = (str: string) => /[\p{L}\p{M}]/u.test(str);
+  const validateNameChar = (str: string) => /^[\p{L}\p{M}\s]+$/u.test(str);
+  const validateNameCharWithPeriod = (str: string) => /^[\p{L}\p{M}\s.]+$/u.test(str);
+  const validateNameCharWithDash = (str: string) => /^[\p{L}\p{M}\s-]+$/u.test(str);
+
   const validate = () => {
     let newErrors: any = {};
 
     if (!form.firstName.trim()) newErrors.firstName = "Required";
+    else if (!validateNameCharWithPeriod(form.firstName)) newErrors.firstName = "Only letters, spaces, and periods allowed";
+    else if (!validateHasLetters(form.firstName)) newErrors.firstName = "Requires at least 1 letter";
+    
     if (!form.lastName.trim()) newErrors.lastName = "Required";
+    else if (!validateNameCharWithDash(form.lastName)) newErrors.lastName = "Only letters, spaces, and dashes allowed";
+    else if (!validateHasLetters(form.lastName)) newErrors.lastName = "Requires at least 1 letter";
+
+    if (!form.middleInitial.trim()) { }
+    else if (form.middleInitial && !validateHasLetters(form.middleInitial)) newErrors.middleInitial = "Only letter allowed";
+
     if (!form.username.trim()) newErrors.username = "Required";
 
     if (!form.password) {
       newErrors.password = "Password is required";
     } else {
-      //const passwordError = validatePassword(form.password);
-      //if (passwordError) newErrors.password = passwordError;
+      const passwordError = validatePassword(form.password);
+      if (passwordError) newErrors.password = passwordError;
     }
 
-    // Confirm password
     if (!form.confirmPassword) {
       newErrors.confirmPassword = "Please confirm your password";
     } else if (form.password !== form.confirmPassword) {
+      newErrors.password = "Passwords do not match";
       newErrors.confirmPassword = "Passwords do not match";
     }
 
@@ -104,7 +118,7 @@ const AuthPage = ({type}: AuthPageProps) => {
         const validationErrors = validate();
         setErrors(validationErrors);
 
-        if (Object.keys(validationErrors).length === 0) {
+        if (Object.keys(validationErrors).length === 0 && !handleCheckExistingStaff()) {
             handleSignup();
         //console.log("Form submitted:", form);
         } else {
@@ -124,6 +138,41 @@ const AuthPage = ({type}: AuthPageProps) => {
     }
   };
   
+  const handleCheckExistingStaff = async () => {
+    try {
+      const response = await api.post('/users/staff-exists',
+      {
+        username: form.username,
+        firstName: form.firstName,
+        lastName: form.lastName
+      });
+      //alert("Response T: " + response.data.token);
+      let newErrors: any = {};
+      
+      //alert("hasExistingStaff: " + hasExistingStaff);
+      if (response.data.exists) {
+        if (response.data.type === "username" || response.data.type === "both") {
+          newErrors.username = "Username already exists";
+        } else if (response.data.type === "name" || response.data.type === "both") {
+          newErrors.firstName = "Name already exists";
+          newErrors.lastName = "Name already exists";
+        }
+      }
+      setErrors(newErrors);
+
+      localStorage.setItem('token', response.data.token);
+      if (response.data.exists) {
+        return true;
+      }
+      return false;
+
+    } catch (err: any) {
+      //alert(err.response?.data?.message || "Login failed");
+      //alert(err.details);
+      alert("Network error, try again later");
+    }
+  };
+
   const handleLogin = async () => {
     try {
       const response = await api.post('/users/login',
@@ -138,7 +187,8 @@ const AuthPage = ({type}: AuthPageProps) => {
       navigate('/');
     } catch (err: any) {
       //alert(err.response?.data?.message || "Login failed");
-      alert(err.details);
+      //alert(err.details);
+      alert("Network error, try again later");
     }
   };
 
@@ -157,7 +207,8 @@ const AuthPage = ({type}: AuthPageProps) => {
       clear();
       navigate('/login');
     } catch (err: any) {
-      alert(err.message);
+      //alert(err.message);
+      alert("Network error, try again later");
       //alert(err.response?.data?.message || "Signup failed");
     }
   };
@@ -192,6 +243,8 @@ const AuthPage = ({type}: AuthPageProps) => {
             inputProps={{ maxLength: 1 }}
             value={form.middleInitial}
             onChange={handleChange}
+            error={!!errors.middleInitial}
+            helperText={errors.middleInitial}
           />}
 
           {type === 'Signup' && <TextField

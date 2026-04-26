@@ -4,6 +4,58 @@ const { generateToken } = require('../tokens');
 const saltRounds = 10;
 exports.pool = null;
 
+exports.staffExists = async (req, res) => {
+    const { username, firstName, lastName } = req.body;
+
+    if (!username) {
+        return res.status(400).json({ message: "Username is required" });
+    }
+
+    try {
+        const [rows] = await exports.pool.execute(`
+            SELECT
+                SUM(IF(Username=?, 1, 0)) AS 'duplicateUsername',
+                SUM(IF(FirstName=? AND LastName=?, 1, 0)) AS 'duplicateName'
+            FROM staff;`, [username, firstName, lastName]
+        );
+
+        // if (rows[0].length === 0) {
+        //     return res.status(404).json({ message: "Username not found" });
+        // }
+
+        if (rows[0].duplicateUsername > 0 && rows[0].duplicateName > 0) {
+            return res.status(200).json({ exists: true, type: "both" });
+        } else if (rows[0].duplicateUsername > 0) {
+            return res.status(200).json({ exists: true, type: "username" });
+        } else if (rows[0].duplicateName > 0) {
+            return res.status(200).json({ exists: true, type: "name" });
+        }
+
+        console.log("\n");
+        console.log(rows[0]);
+        console.log("\n");
+        res.status(200).json({ exists: false });
+
+        // const selectedPassword = rows[0].Password;
+        // const isMatch = await bcrypt.compare(password, selectedPassword);
+
+        // if (!isMatch) {
+        //     return res.status(401).json({ message: "Invalid username or password" });
+        // } else {
+        //   const token = generateToken(rows[0].Id, rows[0].Role);
+        //   res.status(200).json({ token });
+        // }
+
+        
+        //console.log("Status code Q: " +res.statusCode);
+        // console.log(rows[0].Role);
+
+    } catch (error) {
+        console.error("Database Error:", error);
+        res.status(500).json({ message: "Internal server error", details: error.message });
+    }
+};
+
 exports.login = async (req, res) => {
     const { username, password } = req.body;
 

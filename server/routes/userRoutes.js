@@ -10,6 +10,7 @@ module.exports.setPool = function(pool) {
     userController.pool = pool;
 };
 
+router.post('/staff-exists', userController.staffExists);
 router.post('/login', userController.login);
 router.post('/signup', userController.signUp);
 router.post('/role', authenticateToken, async (req, res) => {
