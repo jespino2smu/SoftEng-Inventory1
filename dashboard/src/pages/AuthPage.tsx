@@ -89,7 +89,7 @@ const AuthPage = ({type}: AuthPageProps) => {
     Object.keys(newErrors).forEach(keys => {
       s+= keys + ": " + newErrors[keys] + "\n";
     })
-    alert("Keys total: " + !Object.keys(newErrors).length + "\n" + s);
+    //alert("Keys total: " + !Object.keys(newErrors).length + "\n" + s);
     return newErrors;
   };
 
@@ -129,13 +129,13 @@ const AuthPage = ({type}: AuthPageProps) => {
         const condition1 = Object.keys(validationErrors).length === 0;
         const condition2 = await !handleCheckExistingStaff();
 
-        alert("Validation Errors: " + condition1 + "\nCheck Existing Staff: " + !condition2);
+        //alert("Validation Errors: " + condition1 + "\nCheck Existing Staff: " + !condition2);
 
         if (Object.keys(validationErrors).length === 0 && !condition2) {
             handleSignup();
         //console.log("Form submitted:", form);
         } else {
-            alert("Did not signup.");
+            //alert("Did not signup.");
             return;
         }
     } else if (type === 'Login') {
@@ -197,7 +197,7 @@ const AuthPage = ({type}: AuthPageProps) => {
       });
       //alert("Response T: ");
 
-        alert("Status: " + response.data.status);
+        //alert("Status: " + response.data.status);
       if (response.data.status === "userNotFound") {
         alert("User not found");
         return;
