@@ -6,8 +6,8 @@ import {
   useMediaQuery, useTheme
 } from '@mui/material';
 import { 
-  Menu as MenuIcon, Notifications, AccountCircle, 
-  Dashboard, Assessment 
+  Menu as MenuIcon, Notifications, AccountCircle, Logout,
+  Dashboard, Assessment
 } from '@mui/icons-material';
 
 import { useNavigate } from 'react-router-dom';
@@ -25,6 +25,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
+  const [anchorElAccount, setAnchorElAccount] = useState(null);
+  const openAccount = Boolean(anchorElAccount);
+
   const [role, setRole] = useState<string>('');
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -40,6 +43,7 @@ const navItems = [
   { text: 'Dashboard', icon: <Dashboard />, path: '/' },
   { text: 'Inventory Tracing', icon: <Assessment />, path: '/tracing', managerOnly: true },
   { text: 'Notifications', icon: <Notifications />, path: '/notifications'},
+  { text: 'Logout', icon: <Logout />, path: '/logout'},
 ];
 
   useEffect(() => {
@@ -51,6 +55,23 @@ const navItems = [
     setRole(response.data.role);
     //alert(response.data.role);
   }
+
+
+
+const handleAccountClick = (event: any) => {
+    // Set the target element that was clicked as the anchor
+    setAnchorElAccount(event.currentTarget);
+  };
+
+  const handleAccountClose = () => {
+    // Reset anchorEl to null to close the menu
+    setAnchorElAccount(null);
+  };
+
+
+
+
+
 
   return (
     <>
@@ -69,8 +90,8 @@ const navItems = [
                 <MenuIcon />
               </IconButton>
               <Menu
-                anchorEl={anchorEl}
-                open={open}
+                anchorEl={anchorElAccount}
+                open={openAccount}
                 onClose={() => handleMenuClose()}
               >
                 {navItems.map((item) => (
@@ -88,7 +109,6 @@ const navItems = [
             </>
           )}
 
-          {/* 2. Title hidden on mobile (xs), shown on desktop (sm and up) */}
           <Typography 
             variant="h6" 
             component="div" 
@@ -97,11 +117,11 @@ const navItems = [
             Enterprise App
           </Typography>
           
-          {/* Spacer for mobile to keep icons right-aligned since title is gone */}
           {isMobile && <Box sx={{ flexGrow: 1 }} />}
 
           <IconButton color="inherit"><Notifications /></IconButton>
           <IconButton color="inherit"><AccountCircle /></IconButton>
+
         </Toolbar>
       </AppBar>
 
