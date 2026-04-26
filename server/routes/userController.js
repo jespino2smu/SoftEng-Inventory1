@@ -64,20 +64,39 @@ exports.login = async (req, res) => {
     }
 
     try {
-        const [rows] = await exports.pool.execute('SELECT StaffId as Id, Username, Password, FirstName, LastName, MiddleInitial, Role FROM staff WHERE username=?', [username]);
+        //const [rows] = await exports.pool.execute('SELECT StaffId as Id, Username, Password, FirstName, LastName, MiddleInitial, Role FROM staff WHERE username=?', [username]);
 
-        if (rows[0].length === 0) {
-            return res.status(401).json({ message: "Invalid email or password" });
+        const [rows] = await exports.pool.execute('CALL Login(?)', [username]);
+
+
+        if (!rows[0].length) {
+            return res.status(500).json({ status: "invalid" });
+        }
+        console.log("Length: " + rows[0].length);
+
+
+        if (rows[0][0].NotFound === 1) {
+            return res.status(200).json({ status: "userNotFound", message: "Invalid username or password" });
         }
 
-        const selectedPassword = rows[0].Password;
+        // if (rows.length === 0) {
+        //     //console.log("No user found with username: " + username);
+        //     return res.status(200).json({ status: "false", message: "Invalid username or password" });
+        // }
+        //console.log(rows[0].Password);
+
+        const selectedPassword = rows[0][0].Password;
         const isMatch = await bcrypt.compare(password, selectedPassword);
 
+        console.log(isMatch);
+        console.log(rows[0][0].Password);
         if (!isMatch) {
-            return res.status(401).json({ message: "Invalid username or password" });
+            console.log("Mismatch!");
+            return res.status(200).json({ status: "invalidCredentials", message: "Invalid username or password" });
         } else {
+            console.log("Matched!");
           const token = generateToken(rows[0].Id, rows[0].Role);
-          res.status(200).json({ token });
+          res.status(200).json({ status: "success", token });
         }
 
         

@@ -226,6 +226,21 @@ DELIMITER ;
 
 -- CALL GetHandledStocks(1);
 
+/* ================ */
+
+DELIMITER //
+CREATE PROCEDURE Login(IN input_username VARCHAR(100))
+BEGIN
+    IF EXISTS (SELECT 1 FROM staff WHERE username = input_username) THEN
+        SELECT StaffId AS Id, Username, Password, FirstName, LastName, MiddleInitial, Role
+        FROM staff 
+        WHERE username = input_username;
+    ELSE
+        SELECT true AS NotFound;
+    END IF;
+END //
+DELIMITER ;
+
 /* ===================================================
 
 DEFAULT VALUES:
