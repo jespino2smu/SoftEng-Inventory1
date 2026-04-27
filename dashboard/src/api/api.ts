@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
   // baseURL: 'http://localhost:8080/api'
-  baseURL: 'https://cradle-coast-benefits-zus.trycloudflare.com/api'
+  baseURL: 'https://amendment-institution-extends-gmc.trycloudflare.com/api'
 });
 
 // Automatically attach token to every request if it exists

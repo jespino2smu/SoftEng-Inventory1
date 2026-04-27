@@ -10,6 +10,6 @@ export default defineConfig({
   ],
 
   server: {
-    allowedHosts: ['cradle-coast-benefits-zus.trycloudflare.com']
+    allowedHosts: ['amendment-institution-extends-gmc.trycloudflare.com']
   }
 })
