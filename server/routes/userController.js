@@ -12,12 +12,15 @@ exports.staffExists = async (req, res) => {
     }
 
     try {
-        const [rows] = await exports.pool.execute(`
-            SELECT
-                SUM(IF(Username=?, 1, 0)) AS 'duplicateUsername',
-                SUM(IF(FirstName=? AND LastName=?, 1, 0)) AS 'duplicateName'
-            FROM staff;`, [username, firstName, lastName]
+        // const [rows] = await exports.pool.execute(`
+        //     SELECT
+        //         SUM(IF(Username=?, 1, 0)) AS 'duplicateUsername',
+        //         SUM(IF(FirstName=? AND LastName=?, 1, 0)) AS 'duplicateName'
+        //     FROM staff;`, [username, firstName, lastName]
+        // );
+        const [rows] = await exports.pool.execute(`CALL CheckStaff(?, ?, ?)`, [username, firstName, lastName]
         );
+
 
         // if (rows[0].length === 0) {
         //     return res.status(404).json({ message: "Username not found" });
