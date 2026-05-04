@@ -14,6 +14,55 @@ BEGIN
 END //
 DELIMITER ;
 
+
+DELIMITER //
+CREATE PROCEDURE AuditLogIp(
+	IN Ip VARCHAR(100),
+	IN StaffID INT,
+	IN TableName VARCHAR(255),
+	IN RecordId int,
+	IN LogDescription LONGTEXT)
+BEGIN
+	INSERT INTO audit_log(StaffID, TableName, RecordId, Ip, LogDescription)
+	VALUES (StaffID, TableName, RecordId, Ip, LogDescription);
+END //
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE AuditLogSqlError(
+	IN Ip VARCHAR(100),
+	IN StaffID INT,
+	IN TableName VARCHAR(255),
+	IN RecordId int,
+	IN Description LONGTEXT,
+    
+	IN error_number INT,
+	IN error_sqlstate CHAR(5),
+    IN error_message TEXT
+)
+BEGIN
+	CALL AuditLogIp(Ip, StaffID, TableName, RecordId, CONCAT
+    (
+		Description, ", MySQL Exception (Error Number=", error_number,
+        ", SQL State=", error_sqlstate, "(Error Message=", error_message,
+        ")."
+	));
+END //
+DELIMITER ;
+
+/* =================================================== */
+
+DELIMITER //
+CREATE PROCEDURE CheckStaff(IN Ip VARCHAR(100), IN Username_in VARCHAR(50), IN FirstName_in VARCHAR(50), IN LastName_in VARCHAR(50))
+BEGIN
+	SELECT
+		SUM(IF(Username=Username_in, 1, 0)) AS 'duplicateUsername',
+		SUM(IF(FirstName=FirstName_in AND LastName=LastName_in, 1, 0)) AS 'duplicateName'
+	FROM staff;
+    CALL AuditLogIp(Ip, NULL, "staff", -1, CONCAT("Login attempt with Username='", Username_in, "'"));
+END //
+DELIMITER ;
 /* =================================================== */
 
 DELIMITER //
@@ -164,10 +213,41 @@ CREATE PROCEDURE AddHandledStock(
 	IN ActivityId INT, IN ProductId INT, IN Quantity DECIMAL(10,0)
 )
 BEGIN
+	DECLARE ActivityId_ToAdd INT;
+	DECLARE ProductId_ToAdd INT;
+    DECLARE ActivityType_ToAdd ENUM('Receive', 'Dispatch', 'Inventory');
+    
+    SET ActivityId_ToAdd = ActivityId;
+    SET ProductId_ToAdd = ProductId;
+    
 	INSERT INTO handled_stock (ActivityId, ProductId, Quantity)
     VALUES (ActivityId, ProductId, Quantity);
+    
+	SELECT A.ActivityType
+    INTO ActivityType_ToAdd
+	FROM stock_activity AS A
+	WHERE A.ActivityId = ActivityId_ToAdd
+    LIMIT 1;
+    
+	UPDATE product AS P
+	SET
+		P.StockIn = CASE 
+			WHEN ActivityType_ToAdd = 'Receive' THEN P.StockIn + Quantity
+			ELSE P.StockIn
+		END,
+		P.StockOut = CASE 
+			WHEN ActivityType_ToAdd = 'Dispatch' THEN P.StockOut + Quantity
+			ELSE P.StockOut
+		END,
+		P.Inventory = CASE 
+			WHEN ActivityType_ToAdd = 'Inventory' THEN Quantity
+			ELSE P.Inventory
+		END
+	WHERE P.ProductId = ProductId_ToAdd;
+    -- SELECT ActivityId_ToAdd, ActivityType_ToAdd;
 END //
 DELIMITER ;
+
 /* =================================================== */
 
 DELIMITER //
@@ -229,20 +309,87 @@ DELIMITER ;
 /* ================ */
 
 DELIMITER //
-CREATE PROCEDURE Login(IN input_username VARCHAR(100))
+CREATE PROCEDURE Login(IN Ip VARCHAR(100), IN input_username VARCHAR(100))
 BEGIN
+	DECLARE staff_id INT;
     IF EXISTS (SELECT 1 FROM staff WHERE username = input_username) THEN
+    
+		SELECT StaffId
+        INTO staff_id
+        FROM staff
+        WHERE username = input_username;
+        
         SELECT StaffId AS Id, Username, Password, FirstName, LastName, MiddleInitial, Role
         FROM staff 
         WHERE username = input_username;
+        
+        CALL AuditLogIp
+        (
+			staff_id, "staff", staff_id, Ip,
+			CONCAT("Login (Username='", input_username, "').")
+		);
     ELSE
         SELECT true AS NotFound;
+        
+        CALL AuditLogIp(NULL, "staff", -1, Ip, "Login failed with non-existent user.");
     END IF;
 END //
 DELIMITER ;
 
+/* ================ */
+
+
+
+
+DELIMITER //
+CREATE PROCEDURE Signup(
+	IN Ip VARCHAR(100), IN Username VARCHAR(50),
+    IN Password LONGTEXT, IN FirstName VARCHAR(50),
+    IN LastName VARCHAR(50), IN MiddleInitial VARCHAR(50))
+BEGIN
+	DECLARE newStaffId INT;
+
+    DECLARE error_message TEXT; DECLARE error_sqlstate CHAR(5); DECLARE error_number INT;
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        GET DIAGNOSTICS CONDITION 1
+            error_sqlstate = RETURNED_SQLSTATE, error_number = MYSQL_ERRNO, error_message = MESSAGE_TEXT;
+        CALL AuditLogSqlError(Ip, NULL, "staff", -1, CONCAT
+        (
+			"Signup Error (Username='", Username, "', FirstName='", FirstName,
+            "', MiddleInitial='", MiddleInitial, "', LastName='", LastName, "')"
+        ), error_number, error_sqlstate, error_message);
+    END;
+
+	INSERT INTO staff(Username, Password, FirstName, LastName, MiddleInitial)
+    VALUES (Username, Password, FirstName, LastName, MiddleInitial);
+    
+	CALL AuditLogIp(Ip, LAST_INSERT_ID(), "staff", LAST_INSERT_ID(), CONCAT(
+		"Signed up staff (Username='", Username, "', FirstName='", FirstName,
+        "', MiddleInitial='", MiddleInitial, "', LastName='", LastName, "')"
+    ));
+END //
+DELIMITER ;
+
+-- CALL Signup("", "emmanuel", "Password", "First Name", "Last Name", "Middle Initial")
+
 /* ===================================================
 
+-- ===================================================
+
+DELIMITER //
+CREATE PROCEDURE CheckStockDiscrepancies()
+BEGIN
+	SELECT ProductId, ProductName, Inventory, StockIn, StockOut, StockIn - StockOut AS StockBalance,
+		IF(StockIn - StockOut >= 0, False, True) AS BalanceDiscrepancy,
+		IF(StockIn - StockOut = Inventory, False, True) AS CountDiscrepancy
+	FROM product;
+END //
+DELIMITER ;
+
+-- CALL CheckStockDiscrepancies();
+
+/* ===================================================
 DEFAULT VALUES:
 */
 

@@ -10,6 +10,6 @@ export default defineConfig({
   ],
 
   server: {
-    allowedHosts: ['pearl-outlets-compiler-lets.trycloudflare.com']
+    allowedHosts: ['rebecca-sponsored-southern-ceramic.trycloudflare.com']
   }
 })

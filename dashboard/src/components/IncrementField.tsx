@@ -19,11 +19,13 @@ const iconColor: string = "#4b82b9";
 
 const IncrementField: React.FC<NumberStepperProps> = ({ max, value, setValue, normalSize}) => {
   const [focused, setFocused] = useState(false);
+  const [quantityError, setQuantityError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const numericValue = Number(e.target.value);
+    setQuantityError('');
     
-    if (e.target.value === '') {
+    if (e.target.value === '' || e.target.value === '.') {
       setValue("");
     } else if
     (!isNaN(Number(
@@ -31,6 +33,10 @@ const IncrementField: React.FC<NumberStepperProps> = ({ max, value, setValue, no
       )) &&
       e.target.value[e.target.value.length - 1] === '.' ) {
       setValue(e.target.value);
+    } else if (isNaN(Number(e.target.value))) {
+
+    } else if (numericValue <= 0) {
+      // setQuantityError('Must be positive');
     } else if (numericValue > max) {
       setValue(max.toString());
     } else {
@@ -41,7 +47,9 @@ const IncrementField: React.FC<NumberStepperProps> = ({ max, value, setValue, no
   const increment = () => {
     const numericValue = Number(value);
 
-    if (numericValue < max) {
+    if (value === '' || value === null) {
+      setValue('1');
+    } else if (numericValue < max) {
       setValue((parseInt(value) + 1).toString());
     } else {
       setValue(max.toString());
@@ -132,6 +140,8 @@ function numberField()
             variant="standard"
             value={value}
             onChange={handleChange}
+            error={!!quantityError}
+            helperText={quantityError}
             InputProps={{ disableUnderline: true }}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}

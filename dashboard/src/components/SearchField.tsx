@@ -24,10 +24,11 @@ const index = new Document<{
 
 interface SearchComponentProps {
   data: Product[];
+  setValidity: (value: boolean) => void;
   onSuggestionPicked: (id: number, name: string) => void;
 }
 
-export const SearchField: React.FC<SearchComponentProps> = ({ data, onSuggestionPicked }) => {
+export const SearchField: React.FC<SearchComponentProps> = ({ data, setValidity, onSuggestionPicked }) => {
   const [options, setOptions] = useState<Product[]>([]);
   const [inputValue, setInputValue] = useState("");
 
@@ -50,6 +51,18 @@ export const SearchField: React.FC<SearchComponentProps> = ({ data, onSuggestion
   }, [inputValue, index]);
 
 
+  function validateField(value: string) {
+    //alert(value);
+    const product = options.find(option => option.Name === value);
+
+    if (product) {
+      onSuggestionPicked(product.ProductId, product.Name);
+      setValidity(true);
+    } else {
+      setValidity(false);
+    }
+    setInputValue(value);
+  }
 
 
   
@@ -69,7 +82,8 @@ export const SearchField: React.FC<SearchComponentProps> = ({ data, onSuggestion
       //   }
         
       onInputChange={(event, newInputValue) => {
-        setInputValue(newInputValue);
+        validateField(newInputValue)
+        //setInputValue(newInputValue);
         if (false) {
           event;
         }
@@ -77,6 +91,7 @@ export const SearchField: React.FC<SearchComponentProps> = ({ data, onSuggestion
       onChange={(event, value) => {
         if (value && typeof value !== "string") {
           onSuggestionPicked(value.ProductId, value.Name);
+          setValidity(true);
           // alert(`ID: ${value.ProductId}\nName: ${value.Name}`);
           if (false) {
             event;

@@ -34,10 +34,12 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const [open, setOpen] = useState(false);
+  const [openItem, setOpenItem] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState<Product[]>([]);
 
   const [role, setRole] = useState<string>('');
+
+  const [searchFieldValidity, setSearchFieldValidity] = useState<boolean>(false);
   
   const [currentProduct, setCurrentProduct] = useState<Product>({
     ProductId: 0,
@@ -78,10 +80,10 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
   }
 
 
-  const handleOpen = () => setOpen(true);
+  const handleOpenItem = () => setOpenItem(true);
 
-  const handleClose = () => {
-    setOpen(false);
+  const handleCloseItem = () => {
+    setOpenItem(false);
     setCurrentProduct({
         ProductId: 0,
         Name: '',
@@ -105,7 +107,7 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
             return [...prev, currentProduct];
         }
     });
-    handleClose();
+    handleCloseItem();
   };
 
   function handleSearchSuggestionClick(id: number, name: string) {
@@ -154,12 +156,12 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
             <Button
               variant="contained"
               size="small"
-              onClick={handleOpen}
+              onClick={handleOpenItem}
               sx={{
                 height: '36px',
                 padding: 0,
                 margin: '0',
-                width: { xs: '30px', sm: '30px' }
+                width: isMobile? '30px' : 'fit-content'
               }}>
               <AssignmentAddIcon />
               {isMobile? "" : "Add Item"}
@@ -168,12 +170,12 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
             <Button
               variant="contained"
               size="small"
-              // onClick={handleOpen}
+              // onClick={handleOpenItem}
               sx={{
                 height: '36px',
                 padding: 0,
                 margin: '0',
-                width: { xs: '30px', sm: '30px' }
+                width: isMobile? '30px' : 'fit-content'
               }}>
               <PersonAddIcon />
               {isMobile? "" : "Add Staff"}
@@ -243,8 +245,8 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
       </Box>
       }
       <Dialog
-        open={open}
-        onClose={handleClose}
+        open={openItem}
+        onClose={handleCloseItem}
         fullWidth
         maxWidth="xs"
         PaperProps={{
@@ -261,6 +263,7 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
 
             <SearchField
                 data={searchSuggestions}
+                setValidity={setSearchFieldValidity}
                 onSuggestionPicked={handleSearchSuggestionClick}/>
 
             <Stack direction="row" justifyContent="center">
@@ -284,12 +287,12 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
               }}
             onClick={handleAdd} 
             variant="contained" 
-            disabled={!currentProduct.Quantity}
+            disabled={!currentProduct.Quantity || searchFieldValidity === false}
           >
             Add Item
           </Button>
           <Button
-            onClick={handleClose}
+            onClick={handleCloseItem}
             color="inherit"
             sx={{ marginLeft: "auto" }}>
             Cancel

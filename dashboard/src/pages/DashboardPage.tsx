@@ -76,6 +76,24 @@ export const DashboardPage = () => {
       setDispatchStocks([]);
       setDisplayDispatchStocks(false);
     } else if (movement === "Inventory") {
+      let r = "";
+
+      Object.keys(stockInventory).forEach((i) => {
+        const attr = stockInventory[i as keyof typeof stockInventory];
+
+        Object.keys(attr).forEach((key) => {
+          r += key + ": " + attr[key as keyof typeof attr] + "\n"
+        });
+
+        r += "\n";
+      });
+
+      alert(r);
+
+
+
+
+
       addActivity(movement, stockInventory);
       setDisplayStockInventory(false);
       setStockInventory([]);
@@ -99,6 +117,12 @@ export const DashboardPage = () => {
       //   movement: movement,
       //   stocks: stocks,
       // });
+
+      await api.post('/stocks/add-activity', {
+        movement: movement,
+        stocks: stocks,
+      });
+
 
       await api.post('/stocks/add-activity', {
         movement: movement,

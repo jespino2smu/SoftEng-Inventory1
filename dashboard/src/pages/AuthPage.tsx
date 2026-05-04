@@ -233,14 +233,16 @@ const AuthPage = ({type}: AuthPageProps) => {
   const handleSignup = async () => {
     try {
       // Sending data to /api/signup
-      await api.post('/users/signup', {
+      const response = await api.post('/users/signup', {
         username: form.username,
         password: form.password,
         firstName: form.firstName,
         lastName: form.lastName,
         middleInital: form.middleInitial
       });
+      alert(response.data);
       alert("Signup successful! Please login.");
+      
       
       clear();
       navigate('/login');
