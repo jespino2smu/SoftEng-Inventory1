@@ -364,14 +364,14 @@ BEGIN
 	INSERT INTO staff(Username, Password, FirstName, LastName, MiddleInitial)
     VALUES (Username, Password, FirstName, LastName, MiddleInitial);
     
-	CALL AuditLogIp(Ip, LAST_INSERT_ID(), "staff", LAST_INSERT_ID(), Ip, CONCAT(
+	CALL AuditLogIp(Ip, LAST_INSERT_ID(), "staff", LAST_INSERT_ID(), CONCAT(
 		"Signed up staff (Username='", Username, "', FirstName='", FirstName,
         "', MiddleInitial='", MiddleInitial, "', LastName='", LastName, "')"
     ));
 END //
 DELIMITER ;
 
--- CALL Signup("", "sarah", "paSSSSS", "First Name", "Last Name", "Middle Initial")
+-- CALL Signup("", "emmanuel", "Password", "First Name", "Last Name", "Middle Initial")
 
 /* ===================================================
 
