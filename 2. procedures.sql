@@ -14,19 +14,32 @@ BEGIN
 END //
 DELIMITER ;
 
+
+DELIMITER //
+CREATE PROCEDURE AuditLogIp(
+IN StaffID INT,
+IN TableName VARCHAR(255),
+IN RecordId int,
+IN Ip VARCHAR(100),
+IN LogDescription LONGTEXT)
+BEGIN
+	INSERT INTO audit_log(StaffID, TableName, RecordId, Ip, LogDescription)
+	VALUES (StaffID, TableName, RecordId, Ip, LogDescription);
+END //
+DELIMITER ;
+
 /* =================================================== */
 
 DELIMITER //
-CREATE PROCEDURE CheckStaff(IN Username_in VARCHAR(50), IN FirstName_in VARCHAR(50), IN LastName_in VARCHAR(50))
+CREATE PROCEDURE CheckStaff(IN Ip VARCHAR(100), IN Username_in VARCHAR(50), IN FirstName_in VARCHAR(50), IN LastName_in VARCHAR(50))
 BEGIN
 	SELECT
 		SUM(IF(Username=Username_in, 1, 0)) AS 'duplicateUsername',
 		SUM(IF(FirstName=FirstName_in AND LastName=LastName_in, 1, 0)) AS 'duplicateName'
 	FROM staff;
-    CALL AuditLog(-1, "staff", -1, "Login attempt.");
+    CALL AuditLogIp(NULL, "staff", -1, Ip, CONCAT("Login attempt with Username='", Username_in, "'"));
 END //
 DELIMITER ;
-
 /* =================================================== */
 
 DELIMITER //
@@ -273,18 +286,32 @@ DELIMITER ;
 /* ================ */
 
 DELIMITER //
-CREATE PROCEDURE Login(IN input_username VARCHAR(100))
+CREATE PROCEDURE Login(IN Ip VARCHAR(100), IN input_username VARCHAR(100))
 BEGIN
+	DECLARE staff_id INT;
     IF EXISTS (SELECT 1 FROM staff WHERE username = input_username) THEN
+    
+		SELECT StaffId
+        INTO staff_id
+        FROM staff
+        WHERE username = input_username;
+        
         SELECT StaffId AS Id, Username, Password, FirstName, LastName, MiddleInitial, Role
         FROM staff 
         WHERE username = input_username;
+        
+        CALL AuditLogIp
+        (
+			staff_id, "staff", staff_id, Ip,
+			CONCAT("Login (Username='", input_username, "').")
+		);
     ELSE
         SELECT true AS NotFound;
+        
+        CALL AuditLogIp(NULL, "staff", -1, Ip, "Login failed with non-existent user.");
     END IF;
 END //
 DELIMITER ;
-
 /* ===================================================
 
 -- ===================================================

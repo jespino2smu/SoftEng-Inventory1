@@ -5,6 +5,7 @@ const saltRounds = 10;
 exports.pool = null;
 
 exports.staffExists = async (req, res) => {
+    const ip = req.ip;
     const { username, firstName, lastName } = req.body;
 
     if (!username) {
@@ -18,7 +19,7 @@ exports.staffExists = async (req, res) => {
         //         SUM(IF(FirstName=? AND LastName=?, 1, 0)) AS 'duplicateName'
         //     FROM staff;`, [username, firstName, lastName]
         // );
-        const [rows] = await exports.pool.execute(`CALL CheckStaff(?, ?, ?)`, [username, firstName, lastName]
+        const [rows] = await exports.pool.execute(`CALL CheckStaff(?, ?, ?, ?)`, [ip, username, firstName, lastName]
         );
 
 
@@ -34,9 +35,9 @@ exports.staffExists = async (req, res) => {
             return res.status(200).json({ exists: true, type: "name" });
         }
 
-        console.log("\n");
-        console.log(rows[0]);
-        console.log("\n");
+        //console.log("\n");
+        //console.log(rows[0]);
+        //console.log("\n");
         res.status(200).json({ exists: false });
 
         // const selectedPassword = rows[0].Password;
@@ -60,6 +61,7 @@ exports.staffExists = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
+    const ip = req.ip;
     const { username, password } = req.body;
 
     if (!username || !password) {
@@ -69,13 +71,13 @@ exports.login = async (req, res) => {
     try {
         //const [rows] = await exports.pool.execute('SELECT StaffId as Id, Username, Password, FirstName, LastName, MiddleInitial, Role FROM staff WHERE username=?', [username]);
 
-        const [rows] = await exports.pool.execute('CALL Login(?)', [username]);
+        const [rows] = await exports.pool.execute('CALL Login(?, ?)', [ip, username]);
 
 
         if (!rows[0].length) {
             return res.status(500).json({ status: "invalid" });
         }
-        console.log("Length: " + rows[0].length);
+        //console.log("Length: " + rows[0].length);
 
 
         if (rows[0][0].NotFound === 1) {
@@ -91,13 +93,13 @@ exports.login = async (req, res) => {
         const selectedPassword = rows[0][0].Password;
         const isMatch = await bcrypt.compare(password, selectedPassword);
 
-        console.log(isMatch);
-        console.log(rows[0][0].Password);
+        //console.log(isMatch);
+        //console.log(rows[0][0].Password);
         if (!isMatch) {
-            console.log("Mismatch!");
+            //console.log("Mismatch!");
             return res.status(200).json({ status: "invalidCredentials", message: "Invalid username or password" });
         } else {
-            console.log("Matched!");
+          //console.log("Matched!");
           const token = generateToken(rows[0].Id, rows[0].Role);
           res.status(200).json({ status: "success", token });
         }
