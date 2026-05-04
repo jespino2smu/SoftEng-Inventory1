@@ -10,6 +10,6 @@ export default defineConfig({
   ],
 
   server: {
-    allowedHosts: ['amendment-institution-extends-gmc.trycloudflare.com']
+    allowedHosts: ['rebecca-sponsored-southern-ceramic.trycloudflare.com']
   }
 })
