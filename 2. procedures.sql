@@ -17,14 +17,37 @@ DELIMITER ;
 
 DELIMITER //
 CREATE PROCEDURE AuditLogIp(
-IN StaffID INT,
-IN TableName VARCHAR(255),
-IN RecordId int,
-IN Ip VARCHAR(100),
-IN LogDescription LONGTEXT)
+	IN Ip VARCHAR(100),
+	IN StaffID INT,
+	IN TableName VARCHAR(255),
+	IN RecordId int,
+	IN LogDescription LONGTEXT)
 BEGIN
 	INSERT INTO audit_log(StaffID, TableName, RecordId, Ip, LogDescription)
 	VALUES (StaffID, TableName, RecordId, Ip, LogDescription);
+END //
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE AuditLogSqlError(
+	IN Ip VARCHAR(100),
+	IN StaffID INT,
+	IN TableName VARCHAR(255),
+	IN RecordId int,
+	IN Description LONGTEXT,
+    
+	IN error_number INT,
+	IN error_sqlstate CHAR(5),
+    IN error_message TEXT
+)
+BEGIN
+	CALL AuditLogIp(Ip, StaffID, TableName, RecordId, CONCAT
+    (
+		Description, ", MySQL Exception (Error Number=", error_number,
+        ", SQL State=", error_sqlstate, "(Error Message=", error_message,
+        ")."
+	));
 END //
 DELIMITER ;
 
@@ -37,7 +60,7 @@ BEGIN
 		SUM(IF(Username=Username_in, 1, 0)) AS 'duplicateUsername',
 		SUM(IF(FirstName=FirstName_in AND LastName=LastName_in, 1, 0)) AS 'duplicateName'
 	FROM staff;
-    CALL AuditLogIp(NULL, "staff", -1, Ip, CONCAT("Login attempt with Username='", Username_in, "'"));
+    CALL AuditLogIp(Ip, NULL, "staff", -1, CONCAT("Login attempt with Username='", Username_in, "'"));
 END //
 DELIMITER ;
 /* =================================================== */
@@ -312,6 +335,44 @@ BEGIN
     END IF;
 END //
 DELIMITER ;
+
+/* ================ */
+
+
+
+
+DELIMITER //
+CREATE PROCEDURE Signup(
+	IN Ip VARCHAR(100), IN Username VARCHAR(50),
+    IN Password LONGTEXT, IN FirstName VARCHAR(50),
+    IN LastName VARCHAR(50), IN MiddleInitial VARCHAR(50))
+BEGIN
+	DECLARE newStaffId INT;
+
+    DECLARE error_message TEXT; DECLARE error_sqlstate CHAR(5); DECLARE error_number INT;
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        GET DIAGNOSTICS CONDITION 1
+            error_sqlstate = RETURNED_SQLSTATE, error_number = MYSQL_ERRNO, error_message = MESSAGE_TEXT;
+        CALL AuditLogSqlError(Ip, NULL, "staff", -1, CONCAT
+        (
+			"Signup Error (Username='", Username, "', FirstName='", FirstName,
+            "', MiddleInitial='", MiddleInitial, "', LastName='", LastName, "')"
+        ), error_number, error_sqlstate, error_message);
+    END;
+
+	INSERT INTO staff(Username, Password, FirstName, LastName, MiddleInitial)
+    VALUES (Username, Password, FirstName, LastName, MiddleInitial);
+    
+	CALL AuditLogIp(Ip, LAST_INSERT_ID(), "staff", LAST_INSERT_ID(), Ip, CONCAT(
+		"Signed up staff (Username='", Username, "', FirstName='", FirstName,
+        "', MiddleInitial='", MiddleInitial, "', LastName='", LastName, "')"
+    ));
+END //
+DELIMITER ;
+
+-- CALL Signup("", "sarah", "paSSSSS", "First Name", "Last Name", "Middle Initial")
+
 /* ===================================================
 
 -- ===================================================

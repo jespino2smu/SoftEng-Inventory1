@@ -115,6 +115,7 @@ exports.login = async (req, res) => {
 };
 
 exports.signUp = async (req, res) => {
+    const ip = req.ip;
     const { username, password, firstName, lastName, middleInital } = req.body;
 
 
@@ -149,9 +150,14 @@ exports.signUp = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
+        // await exports.pool.execute(
+        //     'INSERT INTO staff (Username, Password, FirstName, LastName, MiddleInitial) VALUES (?, ?, ?, ?, ?);',
+        //     [username.trim(), hashedPassword, firstName, lastName, middleInital]
+        // );
+        
         await exports.pool.execute(
-            'INSERT INTO staff (Username, Password, FirstName, LastName, MiddleInitial) VALUES (?, ?, ?, ?, ?);',
-            [username.trim(), hashedPassword, firstName, lastName, middleInital]
+            'CALL Signup(?, ?, ?, ?, ?, ?);',
+            [ip, username.trim(), hashedPassword, firstName, lastName, middleInital]
         );
 
         res.status(201).json({ message: "User was signed up successfully!" });

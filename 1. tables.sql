@@ -3,27 +3,27 @@ USE soft_engr_inventory_management;
 
 CREATE TABLE `staff` (
   `StaffId` INT NOT NULL AUTO_INCREMENT,
-  `Username` varchar(50) NOT NULL,
-  `Role` enum('Staff','Manager') NOT NULL,
-  `Password` longtext NOT NULL,
-  `FirstName` varchar(50) DEFAULT NULL,
-  `MiddleInitial` varchar(50) DEFAULT NULL,
-  `LastName` varchar(50) DEFAULT NULL,
+  `Username` VARCHAR(50) NOT NULL,
+  `Role` ENUM('Staff','Manager') NOT NULL,
+  `Password` LONGTEXT NOT NULL,
+  `FirstName` VARCHAR(50) DEFAULT NULL,
+  `MiddleInitial` VARCHAR(50) DEFAULT NULL,
+  `LastName` VARCHAR(50) DEFAULT NULL,
   PRIMARY KEY (`StaffId`),
   UNIQUE KEY `StaffId` (`StaffId`),
   UNIQUE KEY `Username` (`Username`)
 );
 CREATE TABLE `stock_activity` (
   `ActivityId` INT NOT NULL AUTO_INCREMENT,
-  `ActivityType` enum('Receive','Dispatch','Inventory') DEFAULT NULL,
-  `Date` datetime DEFAULT CURRENT_TIMESTAMP,
+  `ActivityType` ENUM('Receive','Dispatch','Inventory') DEFAULT NULL,
+  `Date` DATETIME DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`ActivityId`),
   UNIQUE KEY `ActivityId` (`ActivityId`)
 );
 
 CREATE TABLE `usage_category` (
   `UsageId` INT NOT NULL,
-  `Name` varchar(100) DEFAULT NULL,
+  `Name` VARCHAR(100) DEFAULT NULL,
   PRIMARY KEY (`UsageId`),
   UNIQUE KEY `UsageId` (`UsageId`)
 );
@@ -64,10 +64,10 @@ CREATE TABLE `handling_staff` (
 CREATE TABLE audit_log (
   LogId INT NOT NULL AUTO_INCREMENT,
   StaffId INT DEFAULT NULL,
-  TableName varchar(255) NOT NULL,
+  TableName VARCHAR(255) NOT NULL,
   RecordId INT NOT NULL,
   Ip VARCHAR(100) DEFAULT NULL,
-  LogDescription longtext NOT NULL,
+  LogDescription LONGTEXT NOT NULL,
   Timestamp timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (LogId),
   KEY StaffId (StaffId)
