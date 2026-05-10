@@ -7,6 +7,7 @@ DialogContent, DialogActions, Stack, Paper,
 Table, TableBody, TableCell, TableContainer, TableRow,
 useMediaQuery,
 TableHead,
+Checkbox,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
@@ -25,8 +26,9 @@ import { getRole } from '../api/api';
 
 interface StockMovementProps {
   display: boolean;
-  data: Product[],
-  setData: Dispatch<SetStateAction<Product[]>>;
+  itemData: Product[],
+  setItemData: Dispatch<SetStateAction<Product[]>>;
+  setStaffData: Dispatch<SetStateAction<any[]>>;
   submitLabel: string;
   onSubmit: () => void;
   onReturn: () => void;
@@ -35,7 +37,7 @@ interface StockMovementProps {
 }
 
 const StockMovementPage = ({
-  display, data, setData, submitLabel,
+  display, itemData, setItemData, setStaffData, submitLabel,
   onSubmit, onReturn, onEmptyList, onInvalidQuantity}: StockMovementProps
 ) => {
   const theme = useTheme();
@@ -45,6 +47,7 @@ const StockMovementPage = ({
 
   const [openItem, setOpenItem] = useState(false);
   const [productSuggestions, setProductSuggestions] = useState<Product[]>([]);
+  const [staff, setStaff] = useState([]);
 
   const [role, setRole] = useState<string>('');
 
@@ -72,9 +75,9 @@ const StockMovementPage = ({
   }, []);
 
   async function updateData() {
-  const response: any = await api.post('/stocks/get-products', {
-    activity: 'Inventory',
-  });
+    let response: any = await api.post('/stocks/get-products', {
+      activity: 'Inventory',
+    });
 
       // let n = "";
       // Object.keys(response.data[0]).forEach(key0 => {
@@ -86,6 +89,10 @@ const StockMovementPage = ({
       // alert(n);
 
     setProductSuggestions(response.data[0]);
+
+    response = await api.post('/stocks/get-staff');
+    setStaff(response.data);
+    //alert(JSON.stringify(response.data));
   }
 
 
@@ -105,7 +112,7 @@ const StockMovementPage = ({
 
   const handleAddItem = () => {
     //console.log("Adding Item:", newItem);
-    setData(prev => {
+    setItemData(prev => {
         const exists = prev.some(product => product.ProductId === currentProduct.ProductId);
 
         if (exists) {
@@ -151,12 +158,12 @@ const StockMovementPage = ({
   }
 
   const onSubmitButtonClick = () => {
-    if (data.length === 0) {
+    if (itemData.length === 0) {
       onEmptyList();
     } else {
 
-      for (let i = 0; i < data.length; i++) {
-        const quantity = parseInt(data[i].Quantity);
+      for (let i = 0; i < itemData.length; i++) {
+        const quantity = parseInt(itemData[i].Quantity);
         if (isNaN(quantity)) {
           onInvalidQuantity("Quantity of items must be a valid number.");
           return;
@@ -170,7 +177,7 @@ const StockMovementPage = ({
   };
 
   function removeItem(index: number) {
-    setData(prevData => prevData.filter((_, i) => i !== index));
+    setItemData(prevData => prevData.filter((_, i) => i !== index));
   }
 
 
@@ -258,7 +265,7 @@ const StockMovementPage = ({
           <Table aria-label="responsive table">
 
             <TableBody>
-              {data.map((product, index) => (
+              {itemData.map((product, index) => (
                 <TableRow hover key={index}>
                   <TableCell align="left">
 
@@ -278,7 +285,7 @@ const StockMovementPage = ({
                     <IncrementField max={50}
                       value={product.Quantity.toString()}
                       setValue={(val) => (
-                        setData((prevData) => {
+                        setItemData((prevData) => {
                           const newData = [...prevData];
                           newData[index].Quantity = val;
                           return newData;
@@ -348,32 +355,27 @@ const StockMovementPage = ({
         <TableHead>
           <TableRow>
             <TableCell padding="checkbox">Selected</TableCell>
-            <TableCell>First Name</TableCell>
-            <TableCell>Last Name</TableCell>
           </TableRow>
         </TableHead>
 
-        {/* <TableBody>
-          {employees.map((employee) => (
-            <TableRow
-              key={employee.id}
-              hover
-              onClick={() => toggleEmployee(employee.id)}
+        <TableBody>
+          {staff.map((staff: any, index) => (
+            <TableRow key={index} hover
+              onClick={() => {
+                setStaff((prev: any) =>
+                  prev.map((s: any, i: number) =>
+                    i === index
+                      ? { ...s, Selected: !s.Selected }
+                      : s
+                  )
+                );
+              }}
               sx={{ cursor: "pointer" }}
             >
-              <TableCell padding="checkbox">
-                <Checkbox
-                  checked={employee.checked}
-                  onChange={() => toggleEmployee(employee.id)}
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </TableCell>
-
-              <TableCell>{employee.firstName}</TableCell>
-              <TableCell>{employee.lastName}</TableCell>
+              <TableCell><Checkbox checked={staff.Selected} /> {staff.LastName}, {staff.FirstName} {staff.MiddleInitial}</TableCell>
             </TableRow>
           ))}
-        </TableBody> */}
+        </TableBody>
       </Table>
     </TableContainer>
             }
@@ -385,6 +387,7 @@ const StockMovementPage = ({
             sx={ useMediaQuery("(orientation: portrait)")?
               {margin: "0 auto"} :
               {
+                display: dialogContent === "item"? "visible" : "none",
                 position: "absolute",
                 left: "50%",
                 transform: "translateX(-50%)"
@@ -395,6 +398,22 @@ const StockMovementPage = ({
           >
             Add Item
           </Button>
+          <Button
+            sx={
+              useMediaQuery("(orientation: portrait)")?
+              {margin: "0 auto"} :
+              {
+                display: dialogContent === "staff"? "visible" : "none",
+                position: "absolute",
+                left: "50%",
+                transform: "translateX(-50%)"
+              }}
+            onClick={handleAddStaff} 
+            variant="contained" 
+          >
+            Add Staff
+          </Button>
+
           <Button
             onClick={handleCloseItem}
             color="inherit"

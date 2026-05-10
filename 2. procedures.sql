@@ -284,9 +284,6 @@ DELIMITER ;
 
 /* ================ */
 
-
-
-
 DELIMITER //
 CREATE PROCEDURE Signup(
 	IN Ip VARCHAR(100), IN Username VARCHAR(50),
@@ -318,6 +315,28 @@ END //
 DELIMITER ;
 
 -- CALL Signup("", "emmanuel", "Password", "First Name", "Last Name", "Middle Initial")
+
+/* ================ */
+
+DELIMITER //
+CREATE PROCEDURE GetStaff()
+BEGIN
+	SELECT StaffId, FirstName, MiddleInitial, LastName
+	FROM staff
+    WHERE Role='Staff';
+END //
+DELIMITER ;
+
+-- CALL GetStaff();
+
+INSERT INTO `staff` VALUES
+(0,'Superadmin','Manager','AAAAAAAA',NULL,NULL,NULL),
+(1,'admin','Manager','$2b$10$vVgoegRDTJBZR7NPap4UgedfQUZrXbgT3Qtx0FJ6EYz7wSZ1e49iK','Admin','A','Admin'),
+(41,'cynthia','Staff','$2b$10$Ru14rIMkOJ7cF5ZMfoNlzOaF.nL8M8Bf1BBd4H46TODMLBajJIG..','Cynthia','P','Balesteros'),
+(42,'esmeralda','Staff','$2b$10$VtUq.STGzk3XGQ4rEuJA8eHeyE/QEKTlcOsQDSZooGaaxgC/m2k1.','Esmeralda','A','Concepcion'),
+(43,'pedrino','Staff','$2b$10$vBO4kd1H3lxoPiaX0F1HdeyN7zQX8.enPqGBbdPVlwfo9mk9KiDLS','Pedrino','R','Resurreccion'),
+(44,'cecilio','Staff','$2b$10$2OVWT2S0iSjstcQ09Y7YwOgHlIXSx5szpUMpTVZ5FgJoL2ddz5ZZS','Cecilio','P','Buenavista'),
+(45,'leopoldo','Staff','$2b$10$m03LvUTug9GNOJm4mqlUbOVOS5jMVgYqjlRhoXBGY4M890Het7q9a','Leopoldo','J','Cervantes');
 
 /* ===================================================
 

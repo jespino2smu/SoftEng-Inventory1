@@ -348,3 +348,25 @@ exports.getStockActivities = async (req, res) => {
         res.status(500).json({ message: "Error", details: error.message });
     }
 };
+
+
+
+
+exports.getStaff = async (req, res) => {
+    try {
+        const [result] = await exports.pool.execute(
+            "CALL GetStaff()"
+        );
+        for (let i = 0; i < result[0].length; i++) {
+            result[0][i].Selected = false;
+        }
+        //console.log("Start");
+        console.log(result);
+
+        res.status(201).json(result[0]);
+
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ message: "Error", details: error.message });
+    }
+};

@@ -240,7 +240,7 @@ const AuthPage = ({type}: AuthPageProps) => {
         lastName: form.lastName,
         middleInital: form.middleInitial
       });
-      alert(response.data);
+      //alert(response.data);
       alert("Signup successful! Please login.");
       
       

@@ -31,6 +31,8 @@ export const DashboardPage = () => {
 
   const [stockMovement, setStockMovement] = useState<Movement>("None");
 
+  const [staff, setStaff] = useState<Product[]>([]);
+
   const [receiveStocks, setReceiveStocks] = useState<Product[]>([]);
   const [dispatchStocks, setDispatchStocks] = useState<Product[]>([]);
   const [stockInventory, setStockInventory] = useState<Product[]>([]);
@@ -117,6 +119,7 @@ export const DashboardPage = () => {
       setOpen(true);
     }
     setStockMovement("None");
+    setStaff([]);
   }
 
   function onReturn() {
@@ -222,8 +225,9 @@ export const DashboardPage = () => {
         {role === 'Manager' && <StockMovementPage
           display={displayReceiveStocks}
           submitLabel='Receive'
-          data={receiveStocks}
-          setData={setReceiveStocks}
+          itemData={receiveStocks}
+          setItemData={setReceiveStocks}
+          setStaffData={setStaff}
           onSubmit={() => onSubmit("Receive")}
           onReturn={onReturn}
           onEmptyList={showEmptyListError}
@@ -232,8 +236,9 @@ export const DashboardPage = () => {
         <StockMovementPage
           display={displayStockInventory}
           submitLabel='Confirm Inventory'
-          data={stockInventory}
-          setData={setStockInventory}
+          itemData={stockInventory}
+          setItemData={setStockInventory}
+          setStaffData={setStaff}
           onSubmit={() => onSubmit("Inventory")}
           onReturn={onReturn}
           onEmptyList={showEmptyListError}
@@ -242,8 +247,9 @@ export const DashboardPage = () => {
         {role === 'Manager' &&<StockMovementPage
           display={displayDispatchStocks}
           submitLabel='Dispatch'
-          data={dispatchStocks}
-          setData={setDispatchStocks}
+          itemData={dispatchStocks}
+          setItemData={setDispatchStocks}
+          setStaffData={setStaff}
           onSubmit={() => onSubmit("Dispatch")}
           onReturn={onReturn}
           onEmptyList={showEmptyListError}
