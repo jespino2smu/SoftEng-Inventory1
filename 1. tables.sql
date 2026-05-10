@@ -13,11 +13,13 @@ CREATE TABLE `staff` (
   UNIQUE KEY `StaffId` (`StaffId`),
   UNIQUE KEY `Username` (`Username`)
 );
-CREATE TABLE `stock_activity` (
-  `ActivityId` INT NOT NULL AUTO_INCREMENT,
-  `ActivityType` ENUM('Receive','Dispatch','Inventory') DEFAULT NULL,
-  `Date` DATETIME DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`ActivityId`),
+
+CREATE TABLE stock_activity (
+  ActivityId INT NOT NULL AUTO_INCREMENT,
+  ActivityType ENUM('Receive','Dispatch','Inventory') DEFAULT NULL,
+  HasDiscrepancy BOOLEAN DEFAULT FALSE,
+  Date DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (ActivityId),
   UNIQUE KEY `ActivityId` (`ActivityId`)
 );
 
@@ -32,9 +34,13 @@ CREATE TABLE `product` (
   ProductId INT NOT NULL AUTO_INCREMENT,
   UsageId INT DEFAULT NULL,
   ProductName VARCHAR(100) DEFAULT NULL,
+  
   Inventory DECIMAL,
   StockIn DECIMAL,
   StockOut DECIMAL,
+  
+  ModerateDepletionThreshold DECIMAL DEFAULT 5,
+  CriticalDepletionThreshold DECIMAL DEFAULT 10,
   
   PRIMARY KEY (`ProductId`),
   UNIQUE KEY `ProductId` (`ProductId`),
@@ -45,6 +51,7 @@ CREATE TABLE `product` (
 CREATE TABLE `handled_stock` (
   `ActivityId` INT NOT NULL,
   `ProductId` INT NOT NULL,
+  `PreviousValue` DECIMAL(10,0) DEFAULT NULL,
   `Quantity` DECIMAL(10,0) DEFAULT NULL,
   KEY `ActivityId` (`ActivityId`),
   KEY `ProductId` (`ProductId`),

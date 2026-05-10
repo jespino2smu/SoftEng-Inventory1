@@ -6,6 +6,7 @@ Box, Button, Dialog,
 DialogContent, DialogActions, Stack, Paper,
 Table, TableBody, TableCell, TableContainer, TableRow,
 useMediaQuery,
+TableHead,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
@@ -14,6 +15,7 @@ import api from '../api/api';
 import { type Product} from '../types/Product';
 
 import { SearchField } from "../components/SearchField";
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import AddIcon from "@mui/icons-material/Add";
 import AssignmentAddIcon from '@mui/icons-material/AssignmentAdd';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
@@ -28,14 +30,21 @@ interface StockMovementProps {
   submitLabel: string;
   onSubmit: () => void;
   onReturn: () => void;
+  onEmptyList: () => void;
+  onInvalidQuantity: (arg0: string) => void;
 }
 
-const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onReturn}: StockMovementProps) => {
+const StockMovementPage = ({
+  display, data, setData, submitLabel,
+  onSubmit, onReturn, onEmptyList, onInvalidQuantity}: StockMovementProps
+) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
+  const [dialogContent, setDialogContent] = useState("");
+
   const [openItem, setOpenItem] = useState(false);
-  const [searchSuggestions, setSearchSuggestions] = useState<Product[]>([]);
+  const [productSuggestions, setProductSuggestions] = useState<Product[]>([]);
 
   const [role, setRole] = useState<string>('');
 
@@ -76,11 +85,14 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
       // });
       // alert(n);
 
-    setSearchSuggestions(response.data[0]);
+    setProductSuggestions(response.data[0]);
   }
 
 
-  const handleOpenItem = () => setOpenItem(true);
+  const handleOpenItem = (contentType: string) => {
+    setDialogContent(contentType);
+    setOpenItem(true)
+  };
 
   const handleCloseItem = () => {
     setOpenItem(false);
@@ -91,7 +103,7 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
     });
   };
 
-  const handleAdd = () => {
+  const handleAddItem = () => {
     //console.log("Adding Item:", newItem);
     setData(prev => {
         const exists = prev.some(product => product.ProductId === currentProduct.ProductId);
@@ -110,12 +122,55 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
     handleCloseItem();
   };
 
+  const handleAddStaff = () => {
+    //console.log("Adding Item:", newItem);
+    // setData(prev => {
+    //     const exists = prev.some(product => product.ProductId === currentProduct.ProductId);
+
+    //     if (exists) {
+
+    //     return prev.map(product =>
+    //         product.ProductId === currentProduct.ProductId?
+    //         { ...product, ...currentProduct }
+    //         : product
+    //     );
+    //     } else {
+    //         return [...prev, currentProduct];
+    //     }
+    // });
+    handleCloseItem();
+  };
+
+
   function handleSearchSuggestionClick(id: number, name: string) {
     setCurrentProduct(prev => ({
       ...prev,
       ProductId: id,
       Name: name
     }));
+  }
+
+  const onSubmitButtonClick = () => {
+    if (data.length === 0) {
+      onEmptyList();
+    } else {
+
+      for (let i = 0; i < data.length; i++) {
+        const quantity = parseInt(data[i].Quantity);
+        if (isNaN(quantity)) {
+          onInvalidQuantity("Quantity of items must be a valid number.");
+          return;
+        } else if (quantity <= 0) {
+          onInvalidQuantity("Quantity must be a positive number.");
+          return;
+        }
+      }
+      onSubmit();
+    }
+  };
+
+  function removeItem(index: number) {
+    setData(prevData => prevData.filter((_, i) => i !== index));
   }
 
 
@@ -156,7 +211,7 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
             <Button
               variant="contained"
               size="small"
-              onClick={handleOpenItem}
+              onClick={() => handleOpenItem("item")}
               sx={{
                 height: '36px',
                 padding: 0,
@@ -170,7 +225,7 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
             <Button
               variant="contained"
               size="small"
-              // onClick={handleOpenItem}
+              onClick={() => handleOpenItem("staff")}
               sx={{
                 height: '36px',
                 padding: 0,
@@ -206,6 +261,17 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
               {data.map((product, index) => (
                 <TableRow hover key={index}>
                   <TableCell align="left">
+
+                    <Button variant="contained" sx={{
+                      backgroundColor: '#ce1b1b',
+                      minWidth: isMobile? '15px' : '40px',
+                      minHeight: isMobile? '15px' : '40px',
+                      padding: 0, marginRight: '10px'
+                    }}
+                      onClick={() => removeItem(index)}>
+                      <RemoveCircleIcon />
+                    </Button>
+
                     {product.Name}
                   </TableCell>
                   <TableCell align="right">
@@ -233,7 +299,7 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
         <Button
           variant="contained"
           size="small"
-          onClick={onSubmit}
+          onClick={onSubmitButtonClick}
           sx={{
             height: '36px',
             padding: 0,
@@ -261,18 +327,56 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
 
-            <SearchField
-                data={searchSuggestions}
-                setValidity={setSearchFieldValidity}
-                onSuggestionPicked={handleSearchSuggestionClick}/>
+            {dialogContent === "item" &&
+            <>
+              <SearchField
+                  data={productSuggestions}
+                  setValidity={setSearchFieldValidity}
+                  onSuggestionPicked={handleSearchSuggestionClick}/>
+              <Stack direction="row" justifyContent="center">
+                <IncrementField normalSize max={50000}
+                  value={currentProduct.Quantity}
+                  setValue={(val) => setCurrentProduct({
+                      ...currentProduct,
+                      Quantity: val })} />
+              </Stack>
+            </>
+            }
+            {dialogContent === "staff" &&
+    <TableContainer component={Paper}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell padding="checkbox">Selected</TableCell>
+            <TableCell>First Name</TableCell>
+            <TableCell>Last Name</TableCell>
+          </TableRow>
+        </TableHead>
 
-            <Stack direction="row" justifyContent="center">
-              <IncrementField normalSize max={50000}
-                value={currentProduct.Quantity}
-                setValue={(val) => setCurrentProduct({
-                    ...currentProduct,
-                    Quantity: val })} />
-            </Stack>
+        {/* <TableBody>
+          {employees.map((employee) => (
+            <TableRow
+              key={employee.id}
+              hover
+              onClick={() => toggleEmployee(employee.id)}
+              sx={{ cursor: "pointer" }}
+            >
+              <TableCell padding="checkbox">
+                <Checkbox
+                  checked={employee.checked}
+                  onChange={() => toggleEmployee(employee.id)}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </TableCell>
+
+              <TableCell>{employee.firstName}</TableCell>
+              <TableCell>{employee.lastName}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody> */}
+      </Table>
+    </TableContainer>
+            }
 
           </Stack>
         </DialogContent>
@@ -285,7 +389,7 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
                 left: "50%",
                 transform: "translateX(-50%)"
               }}
-            onClick={handleAdd} 
+            onClick={handleAddItem} 
             variant="contained" 
             disabled={!currentProduct.Quantity || searchFieldValidity === false}
           >

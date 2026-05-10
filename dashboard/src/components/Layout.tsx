@@ -6,9 +6,10 @@ import {
   useMediaQuery, useTheme
 } from '@mui/material';
 import { 
-  Menu as MenuIcon, Notifications, AccountCircle, Logout,
+  Menu as MenuIcon, ContentPaste, Notifications, AccountCircle, Logout,
   Dashboard, Assessment
 } from '@mui/icons-material';
+
 
 import { useNavigate } from 'react-router-dom';
 import api from '../api/api';
@@ -41,8 +42,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 const navItems = [
   { text: 'Dashboard', icon: <Dashboard />, path: '/' },
+  { text: 'Product Listing', icon: <ContentPaste />, path: '/products', managerOnly: true },
   { text: 'Inventory Tracing', icon: <Assessment />, path: '/tracing', managerOnly: true },
-  { text: 'Notifications', icon: <Notifications />, path: '/notifications'},
+  // { text: 'Notifications', icon: <Notifications />, path: '/notifications'},
   { text: 'Logout', icon: <Logout />, path: '/logout'},
 ];
 
@@ -114,13 +116,13 @@ const handleAccountClick = (event: any) => {
             component="div" 
             sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}
           >
-            Enterprise App
+            Inventory Management
           </Typography>
           
           {isMobile && <Box sx={{ flexGrow: 1 }} />}
 
-          <IconButton color="inherit"><Notifications /></IconButton>
-          <IconButton color="inherit"><AccountCircle /></IconButton>
+          {/* <IconButton color="inherit"><Notifications /></IconButton>
+          <IconButton color="inherit"><AccountCircle /></IconButton> */}
 
         </Toolbar>
       </AppBar>

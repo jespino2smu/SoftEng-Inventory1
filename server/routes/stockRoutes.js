@@ -11,5 +11,8 @@ module.exports.setPool = function(pool) {
 router.post('/get-products', authenticateToken, stockController.getProducts);
 router.post('/add-activity', authenticateToken, stockController.addActivity);
 router.post('/get-stock-activities', authenticateToken, stockController.getStockActivities);
+router.post('/list-products', authenticateToken, stockController.listProductQuantities);
 
 
+
+router.post('/get-issues', authenticateToken, stockController.getIssues);

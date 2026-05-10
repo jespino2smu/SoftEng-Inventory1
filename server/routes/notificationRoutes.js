@@ -27,6 +27,9 @@ const getNotifications = () => {
   return JSON.parse(data);
 };
 
+
+
+
 const readData = () => {
   if (!fs.existsSync(notificationFile)) {
     fs.writeFileSync(notificationFile, JSON.stringify([]));
@@ -44,6 +47,9 @@ router.post('/get', (req, res) => {
   const notifications = getNotifications();
   res.json(notifications);
 });
+
+
+
 
 router.patch('/set-read/:id', (req, res) => {
   const { id } = req.params;

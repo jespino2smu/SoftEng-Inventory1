@@ -64,6 +64,7 @@ exports.login = async (req, res) => {
     const ip = req.ip;
     const { username, password } = req.body;
 
+
     if (!username || !password) {
         return res.status(400).json({ message: "Username and password are required" });
     }
@@ -100,7 +101,7 @@ exports.login = async (req, res) => {
             return res.status(200).json({ status: "invalidCredentials", message: "Invalid username or password" });
         } else {
           //console.log("Matched!");
-          const token = generateToken(rows[0].Id, rows[0].Role);
+          const token = generateToken(rows[0][0].Id, rows[0][0].Role);
           res.status(200).json({ status: "success", token });
         }
 

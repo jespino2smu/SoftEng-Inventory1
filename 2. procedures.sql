@@ -136,33 +136,6 @@ DELIMITER ;
 /* =================================================== */
 
 DELIMITER //
-CREATE PROCEDURE AddProduct
-(
-	IN StaffID INT,
-	IN UsageId INT,
-	IN ProductName VARCHAR(100),
-    IN StockIn DECIMAL
-)
-BEGIN
-	DECLARE id INT;
-
-	INSERT INTO product
-    (UsageId, ProductName, Inventory, StockIn, StockOut)
-    VALUES
-    (UsageId, ProductName, StockIn, 0, 0);
-    
-    SELECT LAST_INSERT_ID()
-    INTO id;
-    
-    CALL AuditLog(StaffID, 'Product', id, CONCAT(
-		'Product added: {ProductName: "', ProductName, '}')
-    );
-END //
-DELIMITER ;
-
-/* =================================================== */
-
-DELIMITER //
 CREATE PROCEDURE SearchProductByName(IN ProductName VARCHAR(100))
 BEGIN
 	SELECT *
@@ -184,71 +157,6 @@ DELIMITER ;
 
 /* =================================================== */
 
-DELIMITER //
-CREATE PROCEDURE CreateActivity
-(
-	IN StaffID INT,
-	IN ActivityType ENUM('Receive', 'Dispatch', 'Inventory')
-)
-BEGIN
-	INSERT INTO stock_activity (ActivityType)
-	VALUES (ActivityType);
-    
-    SELECT LAST_INSERT_ID() AS id;
-END //
-DELIMITER ;
-/* ================ */
-DELIMITER //
-CREATE PROCEDURE AddHandledStaff(
-	IN StaffID INT, IN ActivityID INT
-)
-BEGIN
-	INSERT INTO handling_staff (StaffID, ActivityId)
-    VALUES (StaffID, ActivityId);
-END //
-DELIMITER ;
-/* ================ */
-DELIMITER //
-CREATE PROCEDURE AddHandledStock(
-	IN ActivityId INT, IN ProductId INT, IN Quantity DECIMAL(10,0)
-)
-BEGIN
-	DECLARE ActivityId_ToAdd INT;
-	DECLARE ProductId_ToAdd INT;
-    DECLARE ActivityType_ToAdd ENUM('Receive', 'Dispatch', 'Inventory');
-    
-    SET ActivityId_ToAdd = ActivityId;
-    SET ProductId_ToAdd = ProductId;
-    
-	INSERT INTO handled_stock (ActivityId, ProductId, Quantity)
-    VALUES (ActivityId, ProductId, Quantity);
-    
-	SELECT A.ActivityType
-    INTO ActivityType_ToAdd
-	FROM stock_activity AS A
-	WHERE A.ActivityId = ActivityId_ToAdd
-    LIMIT 1;
-    
-	UPDATE product AS P
-	SET
-		P.StockIn = CASE 
-			WHEN ActivityType_ToAdd = 'Receive' THEN P.StockIn + Quantity
-			ELSE P.StockIn
-		END,
-		P.StockOut = CASE 
-			WHEN ActivityType_ToAdd = 'Dispatch' THEN P.StockOut + Quantity
-			ELSE P.StockOut
-		END,
-		P.Inventory = CASE 
-			WHEN ActivityType_ToAdd = 'Inventory' THEN Quantity
-			ELSE P.Inventory
-		END
-	WHERE P.ProductId = ProductId_ToAdd;
-    -- SELECT ActivityId_ToAdd, ActivityType_ToAdd;
-END //
-DELIMITER ;
-
-/* =================================================== */
 
 DELIMITER //
 CREATE PROCEDURE GetMinMaxStockActivitiesId()
@@ -306,7 +214,44 @@ DELIMITER ;
 
 -- CALL GetHandledStocks(1);
 
+
+
+
+
+SELECT
+	IF(P.StockIn - P.StockOut >= 0, False, True),
+	IF(P.StockIn - P.StockOut = Inventory, False, True)
+FROM product AS P
+RIGHT JOIN handled_stock AS S
+ON P.ProductId = S.ProductId
+WHERE ActivityId = 7;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CALL CheckStockDiscrepancies(9);
+
+DELIMITER //
+CREATE PROCEDURE DeclareStockDiscrepancy()
+BEGIN
+
+END //
+DELIMITER ;
+
+
+
 /* ================ */
+
 
 DELIMITER //
 CREATE PROCEDURE Login(IN Ip VARCHAR(100), IN input_username VARCHAR(100))
@@ -325,13 +270,14 @@ BEGIN
         
         CALL AuditLogIp
         (
-			staff_id, "staff", staff_id, Ip,
+			Ip, staff_id, "staff", staff_id,
 			CONCAT("Login (Username='", input_username, "').")
 		);
     ELSE
         SELECT true AS NotFound;
         
-        CALL AuditLogIp(NULL, "staff", -1, Ip, "Login failed with non-existent user.");
+        CALL AuditLogIp(Ip, staff_id, "staff", -1, "Login failed with non-existent user.");
+    
     END IF;
 END //
 DELIMITER ;
@@ -377,17 +323,7 @@ DELIMITER ;
 
 -- ===================================================
 
-DELIMITER //
-CREATE PROCEDURE CheckStockDiscrepancies()
-BEGIN
-	SELECT ProductId, ProductName, Inventory, StockIn, StockOut, StockIn - StockOut AS StockBalance,
-		IF(StockIn - StockOut >= 0, False, True) AS BalanceDiscrepancy,
-		IF(StockIn - StockOut = Inventory, False, True) AS CountDiscrepancy
-	FROM product;
-END //
-DELIMITER ;
 
--- CALL CheckStockDiscrepancies();
 
 /* ===================================================
 DEFAULT VALUES:

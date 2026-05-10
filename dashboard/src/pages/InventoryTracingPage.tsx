@@ -20,50 +20,14 @@ export const InventoryTracingPage = () => {
   
   async function getStockActivities() {
       const result: any = await api.post('/stocks/get-stock-activities', {});
-
-      //alert(result.data);
-
-      // let n = "";
-      // Object.keys(result.data).forEach(key0 => {
-      //   n += `${key0}: ${result.data[key0]}\n`;
-      // });
-      // alert(n);
-
       setStockActivities(result.data);
-      
-      // let readActivities: string = "";
-      // result.forEach((item: any) => {
-      //   readActivities += `[${item.ActivityId}] ${item.ActivityType} - ${item.Date}\n`
-      //   item.Products.forEach((product: any) => {
-      //     readActivities += `     ${product.Quantity} x [${product.ProductName}]\n`;
-      //   })
-      //   readActivities += `\n`
-      // })
-      // alert(readActivities);
   }
 
   return (
     <Box>
       <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>Inventory Tracing</Typography>
-      
-      {/* <TextField
-        fullWidth
-        placeholder="Search reports..."
-        variant="outlined"
-        //onClick={() => setOpen(true)} // Opens dialog
-        sx={{ mb: 3, cursor: 'pointer' }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon />
-            </InputAdornment>
-          ),
-        }}
-      /> */}
-
       <StockActivityTable rows={stockActivities} />
 
-      {/* Search Dialog */}
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle sx={{ m: 0, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           Search Database

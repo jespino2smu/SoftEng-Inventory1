@@ -18,6 +18,8 @@ import ProtectedRoute from './pages/ProtectedRoute';
 
 import CreateNotification from './test/CreateNotification';
 import LogoutPage from './pages/LogoutPage';
+import { ProductListing } from './pages/ProductListing';
+
 
 //import StockMovementPage from './pages/StockMovementPage';
 
@@ -89,6 +91,7 @@ const App: React.FC = () => {
             <Route path="/" element={<Layout><DashboardPage/></Layout>} />
             <Route path="/notifications" element={<Layout><NotificationPage /> </Layout>} />
             <Route path="/tracing" element={<Layout><InventoryTracingPage /></Layout>} />
+            <Route path="/products" element={<Layout><ProductListing /></Layout>} />
           </Route>
         </Routes>
       </Router>

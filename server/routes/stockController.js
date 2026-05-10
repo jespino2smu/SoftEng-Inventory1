@@ -1,11 +1,153 @@
 exports.pool = null;
 
+
+
+exports.listProductQuantities = async (req, res) => {
+    try {
+        let result = [];
+        
+        [result] = await exports.pool.execute(
+            "CALL GetProductsWithQuantity()"
+        );
+
+        const negativeQuantity = [];
+        const zeroQuantity = [];
+        const criticalLowQuantity = [];
+        const moderateLowQuantity = [];
+        const normalQuantity = [];
+
+        let invalidQuantity = 0;
+        let outOfStock = 0;
+        let criticalLowStock = 0;
+        let moderateLowStock = 0;
+        let quantityMismatch = 0;
+
+        for (let i = 0; i < result[0].length; i++) {
+            //console.log(``);
+            result[0][i]["StockBalance"] = Number(result[0][i]["StockBalance"]);
+            if (result[0][i]["StockBalance"] < 0) {
+                result[0][i].Warning = true;
+                result[0][i].StockImbalance = true;
+                invalidQuantity++;
+                negativeQuantity.push(result[0][i]);
+            } else if (result[0][i]["StockBalance"] === 0) {
+                result[0][i].Warning = true;
+                result[0][i].StockImbalance = true;
+                outOfStock++;
+                zeroQuantity.push(result[0][i]);
+            } else if (result[0][i]["StockBalance"] <= result[0][i]["CriticalDepletionThreshold"]) {
+                result[0][i].Warning = true;
+                result[0][i].StockImbalance = true;
+                criticalLowStock++;
+                criticalLowQuantity.push(result[0][i]);
+            } else if (result[0][i]["StockBalance"] <= result[0][i]["ModerateDepletionThreshold"]) {
+                result[0][i].Moderate = true;
+                moderateLowStock++;
+                moderateLowQuantity.push(result[0][i]);
+            } else {
+                normalQuantity.push(result[0][i]);
+            }
+
+            if (result[0][i]["StockBalance"] != Number(result[0][i]["Inventory"])) {
+                result[0][i].Moderate = true;
+                result[0][i].QuantityDiscrepancy = true;
+                quantityMismatch++;
+            }
+        }
+
+        const products = [];
+        products.push(...negativeQuantity);
+        products.push(...zeroQuantity);
+        products.push(...criticalLowQuantity);
+        products.push(...moderateLowQuantity);
+        products.push(...normalQuantity);
+
+        //console.log(products);
+
+        let issuesDetected = false;
+        if (invalidQuantity > 0 || outOfStock > 0 || criticalLowStock > 0 || moderateLowStock > 0 || quantityMismatch > 0) {
+            issuesDetected = true;
+        }
+        res.status(201).json({
+            issuesDetected: issuesDetected,
+            invalidQuantity: invalidQuantity,
+            outOfStock: outOfStock,
+            criticalLowStock: criticalLowStock,
+            moderateLowStock: moderateLowStock,
+            quantityMismatch: quantityMismatch,
+            products: products
+        });
+
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ message: "Error", details: error.message });
+    }
+};
+
+function getStockValues(rows) {
+    const stockImbalances = [];
+    const quantityDisrepancies = [];
+    const moderateDepletion = [];
+    const criticalDepletion = [];
+
+    let stockBalance = 0;
+
+    console.log("\n\n");
+    
+    Object.keys(rows).forEach(key => {
+        stockBalance = rows[key].StockIn - rows[key].StockOut;
+
+        // stockImbalances & quantityDisrepancies have same formula as
+        // PROCEDURE ValidateStockDiscrepancies
+        if (stockBalance < 0) {
+            stockImbalances.push(rows[key].ProductName);
+        }
+        if (stockBalance != rows[key].Inventory) {
+            quantityDisrepancies.push(rows[key].ProductName);
+        }
+        if (stockBalance <= rows[key].ModerateDepletionThreshold || rows[key].Inventory <= rows[key].ModerateDepletionThreshold) {
+            moderateDepletion.push(rows[key].ProductName);
+        }
+        if (stockBalance <= rows[key].CriticalDepletionThreshold || rows[key].Inventory <= rows[key].CriticalDepletionThreshold) {
+            criticalDepletion.push(rows[key].ProductName);
+        }
+    });
+    
+    const summary = {
+        stockImbalances: stockImbalances,
+        quantityDisrepancies: quantityDisrepancies,
+        moderateDepletion: moderateDepletion,
+        criticalDepletion: criticalDepletion
+    }
+
+    return summary;
+}
+
+exports.getIssues = async (req, res) => {
+    try {
+        let result = [];
+        
+        [result] = await exports.pool.execute(
+            "CALL GetStockAllValues()"
+        );
+
+        const summary = getStockValues(result[0]);
+        // console.log("All Summary:", summary);
+        // console.log("\n\n")
+
+        res.status(201).json(summary);
+
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ message: "Error", details: error.message });
+    }
+};
+
 exports.getProducts = async (req, res) => {
     //console.log("Ran!");
     const { userId } = req.body;
 
     try {
-
         const [result] = await exports.pool.execute(
             "CALL GetEmptyProducts()"
         );
@@ -60,6 +202,11 @@ exports.addActivity = async (req, res) => {
         [stockInfo] = await exports.pool.execute(
             "CALL AddHandledStaff(?, ?);",
             [req.userId, activityId]
+        );
+
+        await exports.pool.execute(
+            "CALL ValidateStockDiscrepancies(?);",
+            [activityId]
         );
 
         res.status(200).json(result);

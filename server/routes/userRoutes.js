@@ -15,6 +15,8 @@ router.post('/login', userController.login);
 router.post('/signup', userController.signUp);
 router.post('/role', authenticateToken, async (req, res) => {
     try {
+
+        console.log("userId: " + req.userId);
         res.status(200).json({ role: req.role });
 
     } catch (error) {
