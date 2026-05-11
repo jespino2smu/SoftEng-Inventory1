@@ -26,6 +26,7 @@ import { getRole } from '../api/api';
 
 interface StockMovementProps {
   display: boolean;
+  role: string;
   itemData: Product[],
   setItemData: Dispatch<SetStateAction<Product[]>>;
   setStaffData: Dispatch<SetStateAction<any[]>>;
@@ -37,7 +38,7 @@ interface StockMovementProps {
 }
 
 const StockMovementPage = ({
-  display, itemData, setItemData, setStaffData, submitLabel,
+  display, role, itemData, setItemData, setStaffData, submitLabel,
   onSubmit, onReturn, onEmptyList, onInvalidQuantity}: StockMovementProps
 ) => {
   const theme = useTheme();
@@ -49,7 +50,7 @@ const StockMovementPage = ({
   const [productSuggestions, setProductSuggestions] = useState<Product[]>([]);
   const [staffList, setStaffList] = useState<any[]>([]);
 
-  const [role, setRole] = useState<string>('');
+  //const [role, setRole] = useState<string>('');
 
   const [searchFieldValidity, setSearchFieldValidity] = useState<boolean>(false);
   
@@ -70,8 +71,8 @@ const StockMovementPage = ({
 
   useEffect(() => {
     updateData();
-    const r: any = getRole();
-    setRole(r);
+    //const r: any = getRole();
+    //setRole(r);
   }, []);
 
   async function updateData() {
@@ -234,19 +235,21 @@ const StockMovementPage = ({
               {isMobile? "" : "Add Item"}
             </Button>
             
-            <Button
-              variant="contained"
-              size="small"
-              onClick={() => handleOpenItem("staff")}
-              sx={{
-                height: '36px',
-                padding: 0,
-                margin: '0',
-                width: isMobile? '30px' : 'fit-content'
-              }}>
-              <PersonAddIcon />
-              {isMobile? "" : "Add Staff"}
-            </Button>
+            {role === "Manager" &&
+              <Button
+                variant="contained"
+                size="small"
+                onClick={() => handleOpenItem("staff")}
+                sx={{
+                  height: '36px',
+                  padding: 0,
+                  margin: '0',
+                  width: isMobile? '30px' : 'fit-content'
+                }}>
+                <PersonAddIcon />
+                {isMobile? "" : "Add Staff"}
+              </Button>
+            }
           </Stack>
 
           <Button variant="contained"

@@ -233,6 +233,7 @@ export const DashboardPage = () => {
         {role === 'Manager' && displayAlertCards && <AlertCards />}
         {role === 'Manager' && <StockMovementPage
           display={displayReceiveStocks}
+          role={role}
           submitLabel='Receive'
           itemData={receiveStocks}
           setItemData={setReceiveStocks}
@@ -244,6 +245,7 @@ export const DashboardPage = () => {
           
         <StockMovementPage
           display={displayStockInventory}
+          role={role}
           submitLabel='Confirm Inventory'
           itemData={stockInventory}
           setItemData={setStockInventory}
@@ -255,6 +257,7 @@ export const DashboardPage = () => {
 
         {role === 'Manager' &&<StockMovementPage
           display={displayDispatchStocks}
+          role={role}
           submitLabel='Dispatch'
           itemData={dispatchStocks}
           setItemData={setDispatchStocks}
