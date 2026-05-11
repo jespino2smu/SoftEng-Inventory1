@@ -47,7 +47,7 @@ const StockMovementPage = ({
 
   const [openItem, setOpenItem] = useState(false);
   const [productSuggestions, setProductSuggestions] = useState<Product[]>([]);
-  const [staff, setStaff] = useState([]);
+  const [staffList, setStaffList] = useState<any[]>([]);
 
   const [role, setRole] = useState<string>('');
 
@@ -91,7 +91,16 @@ const StockMovementPage = ({
     setProductSuggestions(response.data[0]);
 
     response = await api.post('/stocks/get-staff');
-    setStaff(response.data);
+    // let s = "";
+    // for (let i = 0; i < response.data.length; i++) {
+    //   s += "\n";
+    //   Object.keys(response.data[i]).forEach(key => {
+    //     s += "    " + key + ": " + response.data[i][key] + "\n";
+    //   })
+    // }
+    // alert(s);
+
+    setStaffList(response.data);
     //alert(JSON.stringify(response.data));
   }
 
@@ -130,21 +139,17 @@ const StockMovementPage = ({
   };
 
   const handleAddStaff = () => {
-    //console.log("Adding Item:", newItem);
-    // setData(prev => {
-    //     const exists = prev.some(product => product.ProductId === currentProduct.ProductId);
+      const selectedStaff = staffList.filter(staff => staff.Selected === true);
 
-    //     if (exists) {
-
-    //     return prev.map(product =>
-    //         product.ProductId === currentProduct.ProductId?
-    //         { ...product, ...currentProduct }
-    //         : product
-    //     );
-    //     } else {
-    //         return [...prev, currentProduct];
-    //     }
-    // });
+      let s = "Selected Staff:\n";
+      for (let i = 0; i < selectedStaff.length; i++) {
+        s += "\n";
+        Object.entries(selectedStaff[i]).forEach(([key, value]) => {
+          s += `    ${key}: ${value} \n`;
+        })
+      }
+      alert(s);
+      setStaffData(selectedStaff);
     handleCloseItem();
   };
 
@@ -352,17 +357,11 @@ const StockMovementPage = ({
             {dialogContent === "staff" &&
     <TableContainer component={Paper}>
       <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell padding="checkbox">Selected</TableCell>
-          </TableRow>
-        </TableHead>
-
         <TableBody>
-          {staff.map((staff: any, index) => (
+          {staffList.map((staff: any, index) => (
             <TableRow key={index} hover
               onClick={() => {
-                setStaff((prev: any) =>
+                setStaffList((prev: any) =>
                   prev.map((s: any, i: number) =>
                     i === index
                       ? { ...s, Selected: !s.Selected }

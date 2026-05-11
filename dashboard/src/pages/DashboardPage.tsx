@@ -31,7 +31,7 @@ export const DashboardPage = () => {
 
   const [stockMovement, setStockMovement] = useState<Movement>("None");
 
-  const [staff, setStaff] = useState<Product[]>([]);
+  const [staff, setStaff] = useState<any[]>([]);
 
   const [receiveStocks, setReceiveStocks] = useState<Product[]>([]);
   const [dispatchStocks, setDispatchStocks] = useState<Product[]>([]);
@@ -78,6 +78,7 @@ export const DashboardPage = () => {
 
 
   function onSubmit(movement: Movement) {
+    alert(staff.length + " " + staff);
     if (movement === "Dispatch") {
       addActivity(movement, dispatchStocks);
       setDispatchStocks([]);
@@ -119,7 +120,6 @@ export const DashboardPage = () => {
       setOpen(true);
     }
     setStockMovement("None");
-    setStaff([]);
   }
 
   function onReturn() {
@@ -138,10 +138,19 @@ export const DashboardPage = () => {
       //   stocks: stocks,
       // });
 
+      let s = "Adding Staff to Activity: \n";
+      for (let i = 0; i < staff.length; i++) {
+        s += staff + "\n";
+      }
+      alert(s)
+
       await api.post('/stocks/add-activity', {
         movement: movement,
         stocks: stocks,
+        staff: staff
       });
+
+      setStaff([]);
   }
 
   

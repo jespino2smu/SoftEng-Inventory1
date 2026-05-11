@@ -166,7 +166,7 @@ exports.getProducts = async (req, res) => {
 
 exports.addActivity = async (req, res) => {
     console.log("Add Activity");
-    const { movement, stocks } = req.body;
+    const { movement, stocks, staff } = req.body;
 
     // console.log("activity: " + activity);
     // console.log("userId: " + req.userId);
@@ -179,7 +179,6 @@ exports.addActivity = async (req, res) => {
     }
 
     try {
-
         const [result] = await exports.pool.execute(
             "CALL CreateActivity(?, ?);",
             [req.userId, movement]
@@ -192,7 +191,7 @@ exports.addActivity = async (req, res) => {
         let [stockInfo] = [];
 
         stocks.forEach(async (stock, index) => {
-            console.log(`\tIndex ${index}:\n\tName: ${stock.ProductId}\n\tQuantity ${stock.Quantity}\n`);
+            //console.log(`\tIndex ${index}:\n\tName: ${stock.ProductId}\n\tQuantity ${stock.Quantity}\n`);
             [stockInfo] = await exports.pool.execute(
                 "CALL AddHandledStock(?, ?, ?);",
                 [activityId, stock.ProductId, stock.Quantity]
@@ -203,6 +202,14 @@ exports.addActivity = async (req, res) => {
             "CALL AddHandledStaff(?, ?);",
             [req.userId, activityId]
         );
+
+        staff.forEach(async (staff) => {
+            console.log(`\StaffId: ${staff.StaffId}\n\Surname ${staff.LastName}\n`);
+            [stockInfo] = await exports.pool.execute(
+                "CALL AddHandledStaff(?, ?);",
+                [staff.StaffId, activityId]
+            );
+        });
 
         await exports.pool.execute(
             "CALL ValidateStockDiscrepancies(?);",
