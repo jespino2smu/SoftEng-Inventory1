@@ -1,14 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import {
-  TextField,
-  Button,
-  Box,
+  TextField, Button,
+  Box, Paper, Container,
   Typography,
-  IconButton,
-  InputAdornment,
-  Container,
-  Paper
+  IconButton, InputAdornment,
+  Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions
+  
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import api from "../api/api";
@@ -33,6 +31,19 @@ const AuthPage = ({type}: AuthPageProps) => {
   const [errors, setErrors] = useState<any>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const [openDialog, setOpenDialog] = useState(false);
+  const [dialogTitle, setDialogTitle] = useState<string>("");
+  const [dialogContent, setDialogContent] = useState<string>("");
+
+  const displayDialog = (title: string, text: string) => {
+    setDialogTitle(title);
+    setDialogContent(text);
+    setOpenDialog(true);
+  };
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
 
   const validatePassword = (password: string) => {
     if (password.length < 8) {
@@ -183,7 +194,8 @@ const AuthPage = ({type}: AuthPageProps) => {
     } catch (err: any) {
       //alert(err.response?.data?.message || "Login failed");
       //alert(err.details);
-      alert("Network error, try again later");
+      displayDialog("Network Error", "Network error, try again later.")
+      //alert("Network error, try again later");
     }
   };
 
@@ -199,15 +211,18 @@ const AuthPage = ({type}: AuthPageProps) => {
 
         //alert("Status: " + response.data.status);
       if (response.data.status === "userNotFound") {
-        alert("User not found");
+        
+        displayDialog("Invalid User", "User not found.");
+        //alert("User not found");
         return;
       } else if (response.data.status === "invalidCredentials") {
-        alert("Incorrect username or password");
+        displayDialog("Invalid Details", "Incorrect username or password.");
+        //alert("Incorrect username or password");
         setLoginAttempts(prev => prev - 1);
         return;
       } else if (response.data.status === "success") {
         localStorage.setItem('token', response.data.token);
-        alert("Login successful!");
+        //displayDialog("Login Successful", "Login successful.");
         clear();
         navigate('/');
       }
@@ -226,7 +241,8 @@ const AuthPage = ({type}: AuthPageProps) => {
       //alert(err.response?.data?.message || "Login failed");
       //alert(err.details);
       //alert(response?.data?.success);
-      alert("Network error, try again later");
+      //alert("Network error, try again later");
+      displayDialog("Network Error", "Network error, try again later.")
     }
   };
 
@@ -241,14 +257,18 @@ const AuthPage = ({type}: AuthPageProps) => {
         middleInital: form.middleInitial
       });
       //alert(response.data);
-      alert("Signup successful! Please login.");
+      //alert("Signup successful! Please login.");
+      displayDialog("Signup Successful", "Signup successful.");
       
       
       clear();
+      setShowPassword(false);
+      setShowConfirmPassword(false);
       navigate('/login');
     } catch (err: any) {
       //alert(err.message);
-      alert("Network error, try again later");
+      //alert("Network error, try again later");
+      displayDialog("Network Error", "Network error, try again later.")
       //alert(err.response?.data?.message || "Signup failed");
     }
   };
@@ -397,6 +417,25 @@ const AuthPage = ({type}: AuthPageProps) => {
       </Paper>
     </Container>) : (<p>Too many failed login attempts. Please try again later.</p>)
     }
+
+    <Dialog
+      open={openDialog}
+      onClose={handleCloseDialog}
+      aria-labelledby="dialog-title"
+      aria-describedby="dialog-description"
+    >
+      <DialogTitle id="dialog-title">{dialogTitle}</DialogTitle>
+
+      <DialogContent>
+        <DialogContentText id="dialog-description">{dialogContent}</DialogContentText>
+      </DialogContent>
+
+      <DialogActions>
+        <Button onClick={handleCloseDialog} variant="contained" autoFocus>
+          OK
+        </Button>
+      </DialogActions>
+    </Dialog>
     </>
   );
 }
