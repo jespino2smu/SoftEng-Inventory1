@@ -73,7 +73,7 @@ const StockMovementPage = ({
     updateData();
     //const r: any = getRole();
     //setRole(r);
-  }, []);
+  }, [display]);
 
   async function updateData() {
     let response: any = await api.post('/stocks/get-products', {
@@ -142,14 +142,14 @@ const StockMovementPage = ({
   const handleAddStaff = () => {
       const selectedStaff = staffList.filter(staff => staff.Selected === true);
 
-      let s = "Selected Staff:\n";
-      for (let i = 0; i < selectedStaff.length; i++) {
-        s += "\n";
-        Object.entries(selectedStaff[i]).forEach(([key, value]) => {
-          s += `    ${key}: ${value} \n`;
-        })
-      }
-      alert(s);
+      // let s = "Selected Staff:\n";
+      // for (let i = 0; i < selectedStaff.length; i++) {
+      //   s += "\n";
+      //   Object.entries(selectedStaff[i]).forEach(([key, value]) => {
+      //     s += `    ${key}: ${value} \n`;
+      //   })
+      // }
+      // alert(s);
       setStaffData(selectedStaff);
     handleCloseItem();
   };
