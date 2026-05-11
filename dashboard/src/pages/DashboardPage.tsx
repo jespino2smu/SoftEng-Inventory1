@@ -81,7 +81,6 @@ export const DashboardPage = () => {
     alert(staff.length + " " + staff);
     if (movement === "Dispatch") {
       addActivity(movement, dispatchStocks);
-      setDispatchStocks([]);
       setDisplayDispatchStocks(false);
       setDispatchStocks([]);
       
@@ -129,20 +128,19 @@ export const DashboardPage = () => {
     setDisplayDispatchStocks(false);
     setDisplayStockInventory(false);
     setDisplayReceiveStocks(false);
+    
+    setDispatchStocks([]);
+    setStockInventory([]);
+    setReceiveStocks([]);
     setStockMovement("None");
   }
 
   async function addActivity(movement: string, stocks: Product[]) {
-      // const result = await post('/stocks/add-activity', {
-      //   movement: movement,
-      //   stocks: stocks,
-      // });
-
-      let s = "Adding Staff to Activity: \n";
-      for (let i = 0; i < staff.length; i++) {
-        s += staff + "\n";
-      }
-      alert(s)
+      // let s = "Adding Staff to Activity: \n";
+      // for (let i = 0; i < staff.length; i++) {
+      //   s += staff + "\n";
+      // }
+      // alert(s)
 
       await api.post('/stocks/add-activity', {
         movement: movement,
