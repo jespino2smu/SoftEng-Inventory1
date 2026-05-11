@@ -8,7 +8,8 @@ import { StockActivityTable } from '../components/StockActivityTable';
 
 import api from '../api/api';
 
-export const InventoryTracingPage = () => {
+// formerly InventoryTracing
+export const StaffTrackingPage = () => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [stockActivities, setStockActivities] = useState([]);
@@ -25,7 +26,7 @@ export const InventoryTracingPage = () => {
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>Inventory Tracing</Typography>
+      <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>Staff Tracking</Typography>
       <StockActivityTable rows={stockActivities} />
 
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">

@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 import { 
   Menu as MenuIcon, ContentPaste, Notifications, AccountCircle, Logout,
-  Dashboard, Assessment
+  Dashboard, PeopleAlt
 } from '@mui/icons-material';
 
 
@@ -43,7 +43,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 const navItems = [
   { text: 'Dashboard', icon: <Dashboard />, path: '/' },
   { text: 'Product Listing', icon: <ContentPaste />, path: '/products', managerOnly: true },
-  { text: 'Inventory Tracing', icon: <Assessment />, path: '/tracing', managerOnly: true },
+  { text: 'Staff Tracking', icon: <PeopleAlt />, path: '/tracking', managerOnly: true },
   // { text: 'Notifications', icon: <Notifications />, path: '/notifications'},
   { text: 'Logout', icon: <Logout />, path: '/logout'},
 ];
