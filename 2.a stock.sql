@@ -57,7 +57,6 @@ DELIMITER ;
 
 /* ================ */
 
-CALL AddHandledStock(27, 3, 5);
 
 DELIMITER //
 CREATE PROCEDURE AddHandledStock(
@@ -118,3 +117,20 @@ END //
 DELIMITER ;
 
 /* =================================================== */
+
+-- CALL AddHandledStock(27, 3, 5);
+
+-- Test Products
+CALL AddProduct(0, 1, 'Caramel Syrup', 10);
+CALL AddProduct(0, 1, 'Vanilla Syrup', 15);
+CALL AddProduct(0, 1, 'Mocha Syrup', 15);
+CALL AddProduct(0, 1, 'Coffee Syrup', 15);
+CALL AddProduct(0, 1, 'Hazelnut Syrup', 15);
+CALL AddProduct(0, 1, 'Salted Caramel Syrup', 15);
+CALL AddProduct(0, 1, 'Buttery Caramel Syrup', 15);
+CALL AddProduct(0, 1, 'Pumpkin Pie Syrup', 15);
+CALL AddProduct(0, 1, 'Forest Pine Syrup', 15);
+CALL AddProduct(0, 1, 'Cookie Butter Syrup', 15);
+CALL AddProduct(0, 1, 'Irish Cream Syrup', 15);
+CALL AddProduct(0, 1, 'Puremade Strawberry Syrup', 15);
+CALL AddProduct(0, 1, 'Dark Chocolate Syrup', 15);

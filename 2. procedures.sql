@@ -239,7 +239,7 @@ WHERE ActivityId = 7;
 
 
 
-CALL CheckStockDiscrepancies(9);
+-- CALL CheckStockDiscrepancies(9);
 
 DELIMITER //
 CREATE PROCEDURE DeclareStockDiscrepancy()
@@ -331,7 +331,7 @@ DELIMITER ;
 
 INSERT INTO `staff` VALUES
 (0,'Superadmin','Manager','AAAAAAAA',NULL,NULL,NULL),
-(1,'admin','Manager','$2b$10$vVgoegRDTJBZR7NPap4UgedfQUZrXbgT3Qtx0FJ6EYz7wSZ1e49iK','Admin','A','Admin'),
+(2,'admin','Manager','$2b$10$vVgoegRDTJBZR7NPap4UgedfQUZrXbgT3Qtx0FJ6EYz7wSZ1e49iK','Admin','A','Admin'),
 (41,'cynthia','Staff','$2b$10$Ru14rIMkOJ7cF5ZMfoNlzOaF.nL8M8Bf1BBd4H46TODMLBajJIG..','Cynthia','P','Balesteros'),
 (42,'esmeralda','Staff','$2b$10$VtUq.STGzk3XGQ4rEuJA8eHeyE/QEKTlcOsQDSZooGaaxgC/m2k1.','Esmeralda','A','Concepcion'),
 (43,'pedrino','Staff','$2b$10$vBO4kd1H3lxoPiaX0F1HdeyN7zQX8.enPqGBbdPVlwfo9mk9KiDLS','Pedrino','R','Resurreccion'),
@@ -348,6 +348,7 @@ INSERT INTO `staff` VALUES
 DEFAULT VALUES:
 */
 
+/*
 INSERT INTO staff (Username, Role, Password)
 VALUES ('Superadmin', 'Manager', 'AAAAAAAA');
 
@@ -362,23 +363,9 @@ CALL CreateStaff ('tess', 'tess', 'Teresita', 'C', 'Tarantino');
 CALL CreateStaff ('mateo', 'mateo', 'Mateo', 'A', 'Madriaga');
 CALL CreateStaff ('esme', 'esme', 'Esmeralda', 'S', 'Buenavista');
 
+*/
 /* ================ */
 
 
 INSERT INTO usage_category (UsageId, Name)
 VALUES (1, 'Ingredient');
-
--- Test Products
-CALL AddProduct(0, 1, 'Caramel Syrup', 10);
-CALL AddProduct(0, 1, 'Vanilla Syrup', 15);
-CALL AddProduct(0, 1, 'Mocha Syrup', 15);
-CALL AddProduct(0, 1, 'Coffee Syrup', 15);
-CALL AddProduct(0, 1, 'Hazelnut Syrup', 15);
-CALL AddProduct(0, 1, 'Salted Caramel Syrup', 15);
-CALL AddProduct(0, 1, 'Buttery Caramel Syrup', 15);
-CALL AddProduct(0, 1, 'Pumpkin Pie Syrup', 15);
-CALL AddProduct(0, 1, 'Forest Pine Syrup', 15);
-CALL AddProduct(0, 1, 'Cookie Butter Syrup', 15);
-CALL AddProduct(0, 1, 'Irish Cream Syrup', 15);
-CALL AddProduct(0, 1, 'Puremade Strawberry Syrup', 15);
-CALL AddProduct(0, 1, 'Dark Chocolate Syrup', 15);
