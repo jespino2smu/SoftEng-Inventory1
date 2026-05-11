@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { 
-  Box, Typography, TextField, InputAdornment, 
+  Box, Typography, TextField, InputAdornment, Button,
   Dialog, DialogTitle, DialogContent, IconButton,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, Container, Alert, AlertTitle
 } from '@mui/material';
-import { Search as SearchIcon, Close as CloseIcon } from '@mui/icons-material';
+import { Search as SearchIcon, Close as CloseIcon, AssignmentAdd } from '@mui/icons-material';
 import { StockActivityTable } from '../components/StockActivityTable';
 
 import api from '../api/api';
@@ -47,19 +47,33 @@ export const ProductListing = () => {
     <Box>
       <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>Product Listing</Typography>
       <Container sx={{ m: '8px' }}>
-      {issues?.issuesDetected && (
-        <Alert severity="error">
-          <AlertTitle sx={{textAlign: 'left'}}>Issue(s) Detected:</AlertTitle>
-          <ul style={{ margin: 0, paddingLeft: '20px', textAlign: 'left' }}>
-            {issues.invalidQuantity > 0 && <li>Invalid quantity ({issues.invalidQuantity} item/s)</li>}
-            {issues.outOfStock > 0 && <li>Out of stock ({issues.outOfStock} item/s)</li>}
-            {issues.criticalLowStock > 0 && <li>Critical low stock ({issues.criticalLowStock} item/s)</li>}
-            {issues.moderateLowStock > 0 && <li>Moderate low stock ({issues.moderateLowStock} item/s)</li>}
-            {issues.quantityMismatch > 0 && <li>Quantity mismatch ({issues.quantityMismatch} item/s)</li>}
-          </ul>
-        </Alert>
-      )}
-    </Container>
+        {issues?.issuesDetected && (
+          <Alert severity="error">
+            <AlertTitle sx={{textAlign: 'left'}}>Issue(s) Detected:</AlertTitle>
+            <ul style={{ margin: 0, paddingLeft: '20px', textAlign: 'left' }}>
+              {issues.invalidQuantity > 0 && <li>Invalid quantity ({issues.invalidQuantity} item/s)</li>}
+              {issues.outOfStock > 0 && <li>Out of stock ({issues.outOfStock} item/s)</li>}
+              {issues.criticalLowStock > 0 && <li>Critical low stock ({issues.criticalLowStock} item/s)</li>}
+              {issues.moderateLowStock > 0 && <li>Moderate low stock ({issues.moderateLowStock} item/s)</li>}
+              {issues.quantityMismatch > 0 && <li>Quantity mismatch ({issues.quantityMismatch} item/s)</li>}
+            </ul>
+          </Alert>
+        )}
+      </Container>
+      
+      {/* <Button
+        variant="contained"
+        size="small"
+        // onClick={() => handleOpenItem("item")}
+        sx={{
+          height: '36px',
+          padding: 0,
+          margin: '0',
+          // width: isMobile? '30px' : 'fit-content'
+        }}>
+        <AssignmentAdd />
+        Add Item
+      </Button> */}
 
     <TableContainer component={Paper} sx={{
       width: '100%', overflowX: 'auto',
