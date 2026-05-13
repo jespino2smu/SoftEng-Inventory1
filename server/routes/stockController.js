@@ -418,3 +418,38 @@ exports.addProduct = async (req, res) => {
         res.status(500).json({ message: "Error", details: error.message });
     }
 };
+
+exports.deleteProduct = async (req, res) => {
+    const { productId } = req.body;
+
+    console.log("Ran");
+    try {
+        const [result] = await exports.pool.execute(
+            "CALL DeleteProduct(?);", [productId]
+        );
+        //res.status(200).json(result);
+        res.status(201).json({ message: "success" });
+
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ message: "Error", details: error.message });
+    }
+};
+
+
+exports.updateProduct = async (req, res) => {
+    const { productId, productName, moderateThreshold, criticalThreshold } = req.body;
+
+    console.log("Ran");
+    try {
+        const [result] = await exports.pool.execute(
+            "CALL UpdateProduct(?, ?, ?, ?);", [productId, productName, moderateThreshold, criticalThreshold]
+        );
+        //res.status(200).json(result);
+        res.status(201).json({ message: "success" });
+
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ message: "Error", details: error.message });
+    }
+};

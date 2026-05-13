@@ -28,6 +28,8 @@ export const ProductListing = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState([]);
   const [issues, setIssues] = useState<Issues | null>(null);
+
+  const [productState, setProductState] = useState<'add' | 'edit'>('add');
   
   useEffect(() => {
     getStockActivities();
@@ -140,17 +142,63 @@ export const ProductListing = () => {
     return false;
   }
 
+  const [productId, setProductId] = useState<Number | null>(null);
+
+  function handleEditProduct(product: any) {
+    setNewProduct({
+      productName: product.ProductName,
+      moderateThreshold: product.ModerateDepletionThreshold,
+      criticalThreshold: product.CriticalDepletionThreshold,
+    });
+    setProductId(product.ProductId);
+    setOpenProductDialog(true);
+  }
+
+  async function deleteProduct() {
+    try {
+      const response = await api.post('/stocks/delete-product',
+      {
+        productId: productId,
+      });
+      
+      getStockActivities();
+      setOpenProductDialog(false);
+      setNewProduct(emptyProduct)
+      displayDialog("Product Deleted Succesfully", "The product has been deleted.");
+    } catch (error: any) {
+
+    }
+  }
+
+  async function updateProduct() {
+    try {
+      const response = await api.post('/stocks/update-product',
+      {
+        productId: productId,
+        productName: newProduct.productName,
+        moderateThreshold: newProduct.moderateThreshold,
+        criticalThreshold: newProduct.criticalThreshold
+      });
+      
+      getStockActivities();
+      setOpenProductDialog(false);
+      setNewProduct(emptyProduct)
+      displayDialog("Product Updated Succesfully", "The product has been updated.");
+    } catch (error: any) {
+
+    }
+  }
+
   return (
     <>
       <Dialog
         open={openProductDialog}
         onClose={() => setOpenProductDialog(false)}
         fullWidth
-        maxWidth="xs"
         slotProps={{
           paper: {
             sx: {
-              width: 400,
+              width: '600px',
               maxWidth: '90vw',
               borderRadius: 2,
             },
@@ -158,7 +206,7 @@ export const ProductListing = () => {
         }}
         >
         <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
+          <Stack spacing={2} sx={{ mt: 2}}>
 
             <TextField
               fullWidth
@@ -195,16 +243,38 @@ export const ProductListing = () => {
           </Stack>
         </DialogContent>
         <DialogActions sx={{ width: "100%" }}>
+          
+          {productState === 'edit' && 
+          <>
+          <Button variant="contained"
+            sx={{marginRight: 'auto', backgroundColor: '#d84141'}}
+            onClick={deleteProduct}
+          >
+            Delete Product
+          </Button>
+          </>}
+
+
+
+
+          {productState === 'add' && 
           <Button variant="contained"
             onClick={submitNewProduct}
           >
             Add Product
-          </Button>
+          </Button>}
+          {productState === 'edit' && 
+          <Button variant="contained"
+            onClick={updateProduct}
+          >
+            Update Product
+          </Button>}
           <Button
             variant="contained"
             onClick={() => setOpenProductDialog(false)}
             color="inherit"
-            sx={{ marginLeft: "auto" }}>
+            sx={{ marginLeft: "auto" }}
+            onClickCapture={() => setNewProduct(emptyProduct)}>
             Cancel
           </Button>
       </DialogActions>
@@ -256,7 +326,10 @@ export const ProductListing = () => {
         <Button
           variant="contained"
           size="small"
-          onClick={() => setOpenProductDialog(true)}
+          onClick={() => {
+            setProductState('add');
+            setOpenProductDialog(true);
+          }}
           sx={{
             height: '36px',
             paddingLeft: '15px',
@@ -267,7 +340,7 @@ export const ProductListing = () => {
             // width: isMobile? '30px' : 'fit-content'
           }}>
           <AddBox />
-          Add Item
+          Add Product
         </Button>
       </Stack>
 
@@ -294,7 +367,14 @@ export const ProductListing = () => {
         </TableHead>
         <TableBody>
             {products.map((product: any, index: number) => (
-                <TableRow key={index} sx={{ backgroundColor: product.Warning ? '#faacac' : product.Moderate? '#fff3cd' : 'inherit' }}>
+                <TableRow key={index} hover
+                  onClick={() => {
+                    setProductState('edit');
+                    handleEditProduct(product)
+                  }}
+                  sx={{
+                    cursor: 'pointer',
+                    backgroundColor: product.Warning ? '#faacac' : product.Moderate? '#fff3cd' : 'inherit' }}>
                     <TableCell align="left">{product.ProductName}</TableCell>
                     <TableCell align="center">{product.StockIn}</TableCell>
                     <TableCell align="center">{product.StockOut}</TableCell>

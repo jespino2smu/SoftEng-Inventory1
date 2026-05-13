@@ -147,6 +147,33 @@ DELIMITER ;
 
 -- CALL NewProduct('Test', 4, 3)
 
+/* ================ */
+DELIMITER //
+CREATE PROCEDURE DeleteProduct(IN in_ProductID INT)
+BEGIN
+	DELETE FROM product
+    WHERE ProductID = in_ProductID;
+END //
+DELIMITER ;
+
+-- CALL DeleteProduct(53);
+
+/* ================ */
+
+DELIMITER //
+CREATE PROCEDURE UpdateProduct(
+	IN in_ProductId INT,
+	IN in_ProductName VARCHAR(100),
+    IN in_ModerateDepletionThreshold DECIMAL,
+    IN in_CriticalDepletionThreshold DECIMAL
+)
+BEGIN
+	UPDATE product
+    SET ProductName=in_ProductName, ModerateDepletionThreshold=in_ModerateDepletionThreshold, CriticalDepletionThreshold=in_CriticalDepletionThreshold
+    WHERE ProductId = in_ProductId;
+END //
+DELIMITER ;
+
 /* =================================================== */
 
 -- CALL AddHandledStock(27, 3, 5);
