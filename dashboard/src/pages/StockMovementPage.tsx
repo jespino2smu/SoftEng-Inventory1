@@ -6,7 +6,6 @@ Box, Button, Dialog,
 DialogContent, DialogActions, Stack, Paper,
 Table, TableBody, TableCell, TableContainer, TableRow,
 useMediaQuery,
-TableHead,
 Checkbox,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -17,7 +16,6 @@ import { type Product} from '../types/Product';
 
 import { SearchField } from "../components/SearchField";
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
-import AddIcon from "@mui/icons-material/Add";
 import AssignmentAddIcon from '@mui/icons-material/AssignmentAdd';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import IncrementField from '../components/IncrementField';
@@ -59,15 +57,6 @@ const StockMovementPage = ({
     Name: '',
     Quantity: '',
   });
-
-
-//   const [items, setItems] = useState<Item[]>([
-//     { ProductId: 1, ProductName: "Apple Pie",},
-//     { ProductId: 2, ProductName: "Banana Bread"},
-//     { ProductId: 3, ProductName: "Cherry Tart"},
-//     { ProductId: 4, ProductName: "Blueberry Muffin"},
-//   ]);
-
 
   useEffect(() => {
     updateData();
@@ -216,8 +205,6 @@ const StockMovementPage = ({
             width: '100%',
             height: '30px',
             mb: 2,
-            padding: '0 10px',
-            paddingTop: '15px'
           }}
         >
           <Stack direction="row" spacing="3px">
@@ -228,6 +215,8 @@ const StockMovementPage = ({
               sx={{
                 height: '36px',
                 padding: 0,
+                paddingLeft: '15px',
+                paddingRight: '15px',
                 margin: '0',
                 width: isMobile? '30px' : 'fit-content'
               }}>
@@ -243,6 +232,8 @@ const StockMovementPage = ({
                 sx={{
                   height: '36px',
                   padding: 0,
+                  paddingLeft: '15px',
+                  paddingRight: '15px',
                   margin: '0',
                   width: isMobile? '30px' : 'fit-content'
                 }}>
@@ -266,8 +257,8 @@ const StockMovementPage = ({
         <TableContainer
           component={Paper}
           sx={{
-            minHeight: isMobile? 'calc(100vh - 90px)' : 'calc(100vh - 200px)',
-            maxHeight: isMobile? 'calc(100vh - 90px)' : 'calc(100vh - 200px)',
+            minHeight: isMobile? 'calc(100vh - 190px)' : 'calc(100vh - 200px)',
+            maxHeight: isMobile? 'calc(100vh - 190px)' : 'calc(100vh - 200px)',
             width: '100%',
             overflow: 'auto' }}>
           <Table aria-label="responsive table">
@@ -318,8 +309,10 @@ const StockMovementPage = ({
           sx={{
             height: '36px',
             padding: 0,
+            paddingLeft: '15px',
+            paddingRight: '15px',
             margin: '0',
-            width: { xs: '120px', sm: '120px' }
+            width: 'fit-content'
           }}>
           {submitLabel}
         </Button>

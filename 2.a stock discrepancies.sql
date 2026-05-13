@@ -139,7 +139,7 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE GetProductsWithQuantity()
 BEGIN
-	SELECT ProductName, Inventory, StockIn, StockOut, StockIn - StockOut AS StockBalance, ModerateDepletionThreshold, CriticalDepletionThreshold
+	SELECT ProductId, ProductName, Inventory, StockIn, StockOut, StockIn - StockOut AS StockBalance, ModerateDepletionThreshold, CriticalDepletionThreshold
 	FROM product
     ORDER BY ProductName;
 END //

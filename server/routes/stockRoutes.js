@@ -14,4 +14,6 @@ router.post('/get-stock-activities', authenticateToken, stockController.getStock
 router.post('/list-products', authenticateToken, stockController.listProductQuantities);
 router.post('/get-staff', authenticateToken, stockController.getStaff);
 router.post('/get-issues', authenticateToken, stockController.getIssues);
+router.post('/check-product-duplicate', authenticateToken, stockController.checkProductDuplicate);
+router.post('/add-product', authenticateToken, stockController.addProduct);
 

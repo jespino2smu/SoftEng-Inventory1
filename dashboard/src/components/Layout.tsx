@@ -15,7 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api/api';
 
 
-  const drawerWidth = 240;
+const drawerWidth = 240;
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
@@ -83,29 +83,27 @@ const handleAccountClick = (event: any) => {
           {/* 1. Menu Icon moved to the leftmost part for mobile */}
           {isMobile && (
             <>
-              <IconButton 
-                color="inherit" 
-                edge="start" 
-                onClick={handleMenuClick} 
+              <IconButton
+                color="inherit"
+                edge="start"
+                onClick={handleMenuClick} // Sets anchorEl
                 sx={{ mr: 2 }}
               >
                 <MenuIcon />
               </IconButton>
               <Menu
-                anchorEl={anchorElAccount}
-                open={openAccount}
+                anchorEl={anchorEl}
+                open={open}
                 onClose={() => handleMenuClose()}
               >
-                {navItems.map((item) => (
+              {navItems.map((item) => (
                   !(item.managerOnly && role !== 'Manager') ? (
                     <MenuItem key={item.text} onClick={() => handleMenuClose(item.path)}>
                       <ListItemIcon>{item.icon}</ListItemIcon>
-                      {/* <ListItemText>{item.text}</ListItemText> */}
-                      <ListItemText>{item.managerOnly && role}</ListItemText>
+                      {/* Fixed text rendering logic here as well */}
+                      <ListItemText>{item.text}</ListItemText> 
                     </MenuItem>
-                  ) : (
-                    <div></div>
-                  )
+                  ) : null
                 ))}
               </Menu>
             </>

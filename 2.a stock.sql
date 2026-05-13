@@ -118,6 +118,37 @@ DELIMITER ;
 
 /* =================================================== */
 
+DELIMITER //
+CREATE PROCEDURE CheckProductExists(
+	IN in_ProductName VARCHAR(100)
+)
+BEGIN
+	IF EXISTS (SELECT 1 FROM product WHERE ProductName = in_ProductName) THEN
+		SELECT TRUE AS nameExists;
+    ELSE
+        SELECT FALSE AS nameExists;
+    END IF;
+END //
+DELIMITER ;
+
+-- CALL CheckProductExists('Mocha Syrup');
+
+DELIMITER //
+CREATE PROCEDURE NewProduct(
+	IN ProductName VARCHAR(100),
+    IN ModerateDepletionThreshold DECIMAL,
+    IN CriticalDepletionThreshold DECIMAL
+)
+BEGIN
+	INSERT INTO product(UsageId, ProductName, ModerateDepletionThreshold, CriticalDepletionThreshold)
+	VALUES (1, ProductName, ModerateDepletionThreshold, CriticalDepletionThreshold);
+END //
+DELIMITER ;
+
+-- CALL NewProduct('Test', 4, 3)
+
+/* =================================================== */
+
 -- CALL AddHandledStock(27, 3, 5);
 
 -- Test Products

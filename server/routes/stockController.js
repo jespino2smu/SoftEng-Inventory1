@@ -356,9 +356,6 @@ exports.getStockActivities = async (req, res) => {
     }
 };
 
-
-
-
 exports.getStaff = async (req, res) => {
     try {
         const [result] = await exports.pool.execute(
@@ -371,6 +368,50 @@ exports.getStaff = async (req, res) => {
         console.log(result);
 
         res.status(201).json(result[0]);
+
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ message: "Error", details: error.message });
+    }
+};
+
+exports.checkProductDuplicate = async (req, res) => {
+    const { productName } = req.body;
+
+    console.log("Ran");
+    try {
+        const [productNameExists] = await exports.pool.execute(
+            "CALL CheckProductExists(?);", [productName]
+        );
+
+        console.log(Boolean(productNameExists[0][0].nameExists));
+        if (Boolean(productNameExists[0][0].nameExists)) {
+            return res.status(500).json({
+                message: 'productNameExists'
+            });
+        }
+
+        res.status(200).json({ message: 'No duplicate name'});
+
+        // res.status(201).json({ message: "Success!" });
+
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ message: "Error", details: error.message });
+    }
+};
+
+exports.addProduct = async (req, res) => {
+    const { productName, moderateThreshold, criticalThreshold } = req.body;
+
+    console.log("Ran");
+    try {
+        const [result] = await exports.pool.execute(
+            "CALL NewProduct(?, ?, ?);",
+            [productName, moderateThreshold, criticalThreshold]
+        );
+        //res.status(200).json(result);
+        res.status(201).json({ message: "success" });
 
     } catch (error) {
         console.error("Error:", error);

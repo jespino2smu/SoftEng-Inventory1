@@ -3,12 +3,16 @@ import {
   Box, Typography, TextField, InputAdornment, Button,
   Dialog, DialogTitle, DialogContent, IconButton,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, Container, Alert, AlertTitle
+  Paper, Container, Alert, AlertTitle,
+  Stack,
+  DialogActions,
+  DialogContentText
 } from '@mui/material';
-import { Search as SearchIcon, Close as CloseIcon, AssignmentAdd } from '@mui/icons-material';
+import { Search as SearchIcon, Close as CloseIcon, AssignmentAdd, AddBox } from '@mui/icons-material';
 import { StockActivityTable } from '../components/StockActivityTable';
 
 import api from '../api/api';
+import IncrementField from '../components/IncrementField';
 
 interface Issues {
     issuesDetected: boolean;
@@ -43,9 +47,192 @@ export const ProductListing = () => {
       //setStockActivities(result.data);
   }
 
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [dialogTitle, setDialogTitle] = useState<string>("");
+  const [dialogContent, setDialogContent] = useState<string>("");
+
+  const [openProductDialog, setOpenProductDialog] = useState<boolean>(false);
+
+  const emptyProduct = {
+    productName: '',
+    moderateThreshold: '',
+    criticalThreshold: ''
+  }
+  const [newProduct, setNewProduct] = useState<any>(emptyProduct);
+
+  function displayDialog(title: string, content: string) {
+    setDialogTitle(title);
+    setDialogContent(content);
+    setOpenDialog(true);
+  }
+
+  function handleNewProduct(e: { target: { name: any; value: any; }; }) {
+    const { name, value } = e.target;
+    setNewProduct({
+      ...newProduct,
+      [name]: value
+    })
+  }
+
+  async function submitNewProduct() {
+    try {
+      if (await validateNewProduct() === false) {
+        return;
+      }
+
+      const response = await api.post('/stocks/add-product',
+      {
+        productName: newProduct.productName,
+        moderateThreshold: newProduct.moderateThreshold,
+        criticalThreshold: newProduct.criticalThreshold
+      });
+      if (response.data.message === 'success') {
+        setOpenProductDialog(false);
+        setNewProduct(emptyProduct);
+        getStockActivities();
+        displayDialog("Product Added Successfully", "A new product was added");
+      }
+    } catch(error: any) {
+      console.error(error);
+    }
+  }
+
+  async function validateNewProduct() {
+    try {
+      if (newProduct.productName.trim() === '') {
+        displayDialog('Product Name is empty', "Provide a product name");
+        return false;
+      }
+
+      const response = await api.post('/stocks/check-product-duplicate',
+      {
+        productName: newProduct.productName,
+        moderateThreshold: newProduct.moderateThreshold,
+        criticalThreshold: newProduct.criticalThreshold
+      });
+
+    } catch(error: any) {
+      if (error.response?.data.message === 'productNameExists') {
+        displayDialog("Product name already exists", "Choose another name.")
+        return false;
+      }
+    }
+    
+    if (newProduct.moderateThreshold.trim() === '') {
+      displayDialog('Moderate Low Stock is empty', "Specify a number");
+    } else if (isNaN(Number(newProduct.moderateThreshold))) {
+      displayDialog('Moderate Low Stock must be a number', "Specify a number");
+    } else if (Number(newProduct.moderateThreshold) <= 0) {
+      displayDialog('Moderate Low Stock must be positive', "Number must be 1 or greater");
+
+    } else if (newProduct.criticalThreshold.trim() === '') {
+      displayDialog('Critical Low Stock is empty', "Specify a number");
+    } else if (isNaN(Number(newProduct.criticalThreshold))) {
+      displayDialog('Critical Low Stock must be a number', "Specify a number");
+    } else if (Number(newProduct.criticalThreshold) <= 0) {
+      displayDialog('Critical Low Stock must be positive', "Number must be 1 or greater");
+    } else if (Number(newProduct.criticalThreshold) >= Number(newProduct.moderateThreshold)) {
+      displayDialog('Critical Threshold Exceeded', "Critical Threshold must be a lower value than Moderate Threshold");
+    } else {
+      return true;
+    }
+
+    return false;
+  }
+
   return (
+    <>
+      <Dialog
+        open={openProductDialog}
+        onClose={() => setOpenProductDialog(false)}
+        fullWidth
+        maxWidth="xs"
+        slotProps={{
+          paper: {
+            sx: {
+              width: 400,
+              maxWidth: '90vw',
+              borderRadius: 2,
+            },
+          },
+        }}
+        >
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+
+            <TextField
+              fullWidth
+              label="Product Name"
+              name="productName"
+              margin="normal"
+              value={newProduct.productName}
+              onChange={handleNewProduct}
+              // error={!!errors.firstName}
+              // helperText={errors.firstName}
+            />
+            
+            <TextField
+              fullWidth
+              label="Low Stock Threshold (Moderate)"
+              name="moderateThreshold"
+              margin="normal"
+              value={newProduct.moderateThreshold}
+              onChange={handleNewProduct}
+              // error={!!errors.firstName}
+              // helperText={errors.firstName}
+            />
+
+            <TextField
+              fullWidth
+              label="Low Stock Threshold (Critical) "
+              name="criticalThreshold"
+              margin="normal"
+              value={newProduct.criticalThreshold}
+              onChange={handleNewProduct}
+              // error={!!errors.firstName}
+              // helperText={errors.firstName}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ width: "100%" }}>
+          <Button variant="contained"
+            onClick={submitNewProduct}
+          >
+            Add Product
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => setOpenProductDialog(false)}
+            color="inherit"
+            sx={{ marginLeft: "auto" }}>
+            Cancel
+          </Button>
+      </DialogActions>
+    </Dialog>
+    
+    <Dialog
+      open={openDialog}
+      onClose={() => setOpenDialog(false)}
+      aria-labelledby="dialog-title"
+      aria-describedby="dialog-description"
+    >
+      <DialogTitle id="dialog-title" sx={{color: 'black'}}>{dialogTitle}</DialogTitle>
+
+      <DialogContent>
+        <DialogContentText id="dialog-description">{dialogContent}</DialogContentText>
+      </DialogContent>
+
+      <DialogActions>
+        <Button onClick={() => setOpenDialog(false)} variant="contained" autoFocus>
+          OK
+        </Button>
+      </DialogActions>
+    </Dialog>
+
+
     <Box>
       <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>Product Listing</Typography>
+
       <Container sx={{ m: '8px' }}>
         {issues?.issuesDetected && (
           <Alert severity="error">
@@ -61,25 +248,41 @@ export const ProductListing = () => {
         )}
       </Container>
       
-      {/* <Button
-        variant="contained"
-        size="small"
-        // onClick={() => handleOpenItem("item")}
+      <Stack direction="row" spacing={2} 
         sx={{
-          height: '36px',
-          padding: 0,
-          margin: '0',
-          // width: isMobile? '30px' : 'fit-content'
+          width: '100%',
+          height: '40px'
         }}>
-        <AssignmentAdd />
-        Add Item
-      </Button> */}
+        <Button
+          variant="contained"
+          size="small"
+          onClick={() => setOpenProductDialog(true)}
+          sx={{
+            height: '36px',
+            paddingLeft: '15px',
+            paddingRight: '15px',
+            margin: '0',
+            marginRight: 'auto',
+            flexShrink: 0,
+            // width: isMobile? '30px' : 'fit-content'
+          }}>
+          <AddBox />
+          Add Item
+        </Button>
+      </Stack>
 
     <TableContainer component={Paper} sx={{
-      width: '100%', overflowX: 'auto',
+      width: '100%',
+      height: 'calc(80vh - 190px)',
+      overflow: 'auto',
       }}>
-      <Table aria-label="responsive table">
-        <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
+      <Table aria-label="responsive table" stickyHeader >
+        <TableHead sx={{ backgroundColor: '#f5f5f5', height: '5px',
+          '& .MuiTableCell-root': {
+            py: 0.5,
+            lineHeight: 1.2,
+          },
+         }}>
           <TableRow>
             <TableCell align="center"><strong>Products</strong></TableCell>
             <TableCell align="center"><strong>Stock<br />In</strong></TableCell>
@@ -145,5 +348,6 @@ export const ProductListing = () => {
         </DialogContent>
       </Dialog>
     </Box>
+    </>
   );
 };
