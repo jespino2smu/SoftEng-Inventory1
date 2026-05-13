@@ -63,8 +63,6 @@ const ActivitySearchDialog: React.FC<ActivitySearchDialogProps> = ({
   const handleCheckboxChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-  const [productSuggestions, setProductSuggestions] = useState<any[]>([]);
-    const [searchFieldValidity, setSearchFieldValidity] = useState<boolean>(false);
 
     onColorsChange({
       ...colors,
@@ -72,6 +70,9 @@ const ActivitySearchDialog: React.FC<ActivitySearchDialogProps> = ({
     });
   };
 
+  const [productSuggestions, setProductSuggestions] = useState<any[]>([]);
+    const [searchFieldValidity, setSearchFieldValidity] = useState<boolean>(false);
+    
   useEffect(() => {
     updateData();
   }, []);
