@@ -23,12 +23,17 @@ const index = new Document<{
 });
 
 interface SearchComponentProps {
+  displayProductName?: boolean;
   data: Product[];
   setValidity: (value: boolean) => void;
   onSuggestionPicked: (id: number, name: string) => void;
 }
 
-export const SearchField: React.FC<SearchComponentProps> = ({ data, setValidity, onSuggestionPicked }) => {
+export const SearchField: React.FC<SearchComponentProps> = ({
+  data,
+  displayProductName,
+  setValidity,
+  onSuggestionPicked }) => {
   const [options, setOptions] = useState<Product[]>([]);
   const [inputValue, setInputValue] = useState("");
 
@@ -114,7 +119,7 @@ export const SearchField: React.FC<SearchComponentProps> = ({ data, setValidity,
       renderInput={(params) => (
         <TextField
           {...params}
-          label="Search"
+          label={displayProductName? "Product Name" : "Search"}
           
           variant="outlined"
 

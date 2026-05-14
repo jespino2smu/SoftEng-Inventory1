@@ -176,6 +176,55 @@ DELIMITER ;
 
 /* =================================================== */
 
+DELIMITER //
+CREATE PROCEDURE SearchActivitiesByProduct(
+	IN in_ProductId INT
+)
+BEGIN
+	SELECT A.ActivityId
+    FROM stock_activity AS A
+    RIGHT JOIN handled_stock AS P
+    ON A.ActivityId = P.ActivityId
+    WHERE P.ProductId = in_ProductId;
+END //
+DELIMITER ;
+
+-- CALL SearchActivitiesByProduct(7);
+
+/* ================ */
+
+DELIMITER //
+CREATE PROCEDURE SearchActivitiesByStaff(
+	IN in_StaffId INT
+)
+BEGIN
+	SELECT A.ActivityId
+    FROM stock_activity AS A
+    RIGHT JOIN handling_staff AS s
+    ON A.ActivityId = S.ActivityId
+    WHERE S.StaffId = in_StaffId;
+END //
+DELIMITER ;
+
+-- CALL SearchActivitiesByStaff(1);
+
+/* ================ */
+
+DELIMITER //
+CREATE PROCEDURE SearchActivitiesByType(
+	IN in_ActivityType ENUM('Receive', 'Dispatch', 'Inventory')
+)
+BEGIN
+	SELECT ActivityId
+    FROM stock_activity
+    WHERE ActivityType = in_ActivityType;
+END //
+DELIMITER ;
+
+-- CALL SearchActivitiesByType('Dispatch');
+
+/* =================================================== */
+
 -- CALL AddHandledStock(27, 3, 5);
 
 -- Test Products

@@ -10,12 +10,23 @@ import {
   FormControlLabel,
   FormGroup,
   Stack,
+  InputAdornment,
+  IconButton,
+  Table,
+  TableBody,
+  TableRow,
+  TableCell,
+  Typography,
 } from "@mui/material";
 
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import SearchField from "./SearchField";
+
+
+import { Clear } from '@mui/icons-material';
+
 import api from "../api/api";
 
 type ColorState = {
@@ -33,38 +44,31 @@ export type Data = {
 
 type ActivitySearchDialogProps = {
   open: boolean;
-  name: string;
-  startDate: Date | null;
-  endDate: Date | null;
-  colors: ColorState;
 
   field: any;
   updateField: (e: any) => void;
+  setStaff: (value: number) => void;
+  updateCheckBox: (e: any) => void;
 
   onNameChange: (name: string, value: any) => void;
   onStartDateChange: (date: any) => void;
   onEndDateChange: (date: any) => void;
-  onColorsChange: (name: string, colors: ColorState) => void;
 
-  onOk: () => void;
+  onSearch: () => void;
   onCancel: () => void;
 };
 
 const ActivitySearchDialog: React.FC<ActivitySearchDialogProps> = ({
   open,
-  name,
-  startDate,
-  endDate,
-  colors,
 
   field,
   updateField,
+  setStaff,
+  updateCheckBox,
 
-  onNameChange,
   onStartDateChange,
   onEndDateChange,
-  onColorsChange,
-  onOk,
+  onSearch,
   onCancel,
 }) => {
   const handleCheckboxChange = (
@@ -74,8 +78,20 @@ const ActivitySearchDialog: React.FC<ActivitySearchDialogProps> = ({
   };
 
   const [productSuggestions, setProductSuggestions] = useState<any[]>([]);
-    const [searchFieldValidity, setSearchFieldValidity] = useState<boolean>(false);
-    
+  const [searchFieldValidity, setSearchFieldValidity] = useState<boolean>(false);
+  
+  
+  const [currentStaff, setCurrentStaff] = useState<any>({
+    id: null, name: ""
+  });
+  const [openStaffDialog, setOpenStaffDialog] = useState<boolean>(false);
+  const [staffList, setStaffList] = useState<any[]>([
+  { id: 1, name: "Alice" },
+  { id: 2, name: "Bob" },
+  { id: 3, name: "Charlie" },
+  { id: 4, name: "David" },
+])
+
   useEffect(() => {
     updateData();
   }, []);
@@ -97,14 +113,16 @@ const ActivitySearchDialog: React.FC<ActivitySearchDialogProps> = ({
     setProductSuggestions(response.data[0]);
 
     response = await api.post('/stocks/get-staff');
-    // let s = "";
-    // for (let i = 0; i < response.data.length; i++) {
-    //   s += "\n";
-    //   Object.keys(response.data[i]).forEach(key => {
-    //     s += "    " + key + ": " + response.data[i][key] + "\n";
-    //   })
-    // }
-    // alert(s);
+
+    let s = "";
+    for (let i = 0; i < response.data.length; i++) {
+      s += "\n";
+      Object.keys(response.data[i]).forEach(key => {
+        s += "    " + key + ": " + response.data[i][key] + "\n";
+      })
+    }
+    alert(s);
+    setStaffList(response.data);
 
     //setStaffList(response.data);
     //alert(JSON.stringify(response.data));
@@ -127,7 +145,9 @@ const ActivitySearchDialog: React.FC<ActivitySearchDialogProps> = ({
     // }));
   }
 
+
   return (
+    <>
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Dialog
         open={open}
@@ -141,16 +161,38 @@ const ActivitySearchDialog: React.FC<ActivitySearchDialogProps> = ({
           <Stack spacing={3} sx={{ mt: 1 }}>
             
             <SearchField
+                displayProductName
                 data={productSuggestions}
                 setValidity={setSearchFieldValidity}
                 onSuggestionPicked={handleSearchSuggestionClick}/>
 
             <TextField
               name="name"
-              label="Name"
+              label="Staff Name"
               fullWidth
-              value={field.name}
-              onChange={updateField}
+              value={currentStaff.name}
+              onClick={() => {
+                setOpenStaffDialog(true);
+              }}
+              slotProps={{
+                input: {
+                  readOnly: true,
+                  endAdornment: currentStaff.name !== "" ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        edge="end"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentStaff({
+                            id: null, name: ""
+                          })}}
+                      >
+                        <Clear />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : null,
+                }
+              }}
             />
 
             <DatePicker
@@ -177,39 +219,40 @@ const ActivitySearchDialog: React.FC<ActivitySearchDialogProps> = ({
               }}
             />
 
+            <Typography variant="caption" sx={{ mb: 0, pb: 0, fontWeight: 'bold' }}>Activity Types:</Typography>
             {/* Checkboxes */}
             <FormGroup>
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={colors.red}
-                    onChange={handleCheckboxChange}
-                    name="red"
+                    name="dispatch"
+                    checked={field.dispatch}
+                    onChange={updateCheckBox}
                   />
                 }
-                label="Red"
+                label="Dispatch"
               />
 
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={colors.yellow}
-                    onChange={handleCheckboxChange}
-                    name="yellow"
+                    name="inventory"
+                    checked={field.inventory}
+                    onChange={updateCheckBox}
                   />
                 }
-                label="Yellow"
+                label="Inventory"
               />
 
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={colors.blue}
-                    onChange={handleCheckboxChange}
-                    name="blue"
+                    name="received"
+                    checked={field.received}
+                    onChange={updateCheckBox}
                   />
                 }
-                label="Blue"
+                label="Received"
               />
             </FormGroup>
           </Stack>
@@ -222,22 +265,58 @@ const ActivitySearchDialog: React.FC<ActivitySearchDialogProps> = ({
 
           <Button
             variant="contained"
-            onClick={onOk}
+            onClick={onSearch}
           >
             Search
           </Button>
         </DialogActions>
       </Dialog>
     </LocalizationProvider>
+
+      <Dialog
+        open={openStaffDialog}
+        onClose={() => setOpenStaffDialog(false)}
+        fullWidth>
+        <DialogTitle sx={{color: 'black'}}>Select a Name</DialogTitle>
+
+        <DialogContent>
+          <Table>
+            <TableBody>
+              {staffList.map((staff: any, index: number) => (
+                <TableRow
+                  key={index}
+                  hover
+                  // selected={tempSelected === staff}
+                  onClick={() => {
+                    const staffName = staff.LastName + " " + staff.FirstName + (staff.MiddleInitial? " " + staff.MiddleInitial + "." : "");
+
+                    setStaff(staff.StaffId);
+
+                    setCurrentStaff({
+                      staffId: staff.StaffId,
+                      name: staffName
+                    });
+                    setOpenStaffDialog(false);
+                  }}
+                  sx={{
+                    cursor: "pointer",
+                  }}
+                >
+                  <TableCell>{staff.LastName}, {staff.FirstName}{staff.MiddleInitial? " " + staff.MiddleInitial + "." : ""}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => {
+              setOpenStaffDialog(false);
+            }}>Back</Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 
 export default ActivitySearchDialog;
-
-function setCurrentProduct(arg0: (prev: any) => any) {
-    throw new Error("Function not implemented.");
-}
-function setProductSuggestions(arg0: any) {
-    throw new Error("Function not implemented.");
-}
-

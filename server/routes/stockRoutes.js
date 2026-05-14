@@ -19,3 +19,6 @@ router.post('/add-product', authenticateToken, stockController.addProduct);
 router.post('/delete-product', authenticateToken, stockController.deleteProduct);
 router.post('/update-product', authenticateToken, stockController.updateProduct);
 
+
+router.post('/search-activities', authenticateToken, stockController.searchActivities);
+

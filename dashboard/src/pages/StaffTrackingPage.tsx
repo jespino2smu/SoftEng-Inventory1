@@ -26,20 +26,17 @@ export const StaffTrackingPage = () => {
       const result: any = await api.post('/stocks/get-stock-activities', {});
       setStockActivities(result.data);
   }
-
-
-  const [openSearchDialog, setOpenSearchDialog] = useState<any>([]);
+  const [openSearchDialog, setOpenSearchDialog] = useState<boolean>(false);
 
   const emptySearchField = {
     productId: null,
-    name: '',
+    staffId: null,
     startDate: null,
     endDate: null,
-    colors: {
-        red: false,
-        yellow: false,
-        blue: false,
-      },
+
+    dispatch: 'on',
+    inventory: 'on',
+    received: 'on'
   };
   const [searchField, setSearchField] = useState<any>(emptySearchField);
 
@@ -57,10 +54,24 @@ export const StaffTrackingPage = () => {
 
 
 
+  function setStaff(value: number) {
+    setSearchField((prev: any) => ({
+      ...prev,
+      staffId: value,
+    }))
+  }
+
   function updateSearchField(e: any) {
     setSearchField((prev: any) => ({
       ...prev,
       [e.target.name]: e.target.value,
+    }))
+  }
+
+  function updateCheckBox(e: any) {
+    setSearchField((prev: any) => ({
+      ...prev,
+      [e.target.name]: e.target.checked,
     }))
   }
 
@@ -76,6 +87,19 @@ export const StaffTrackingPage = () => {
       ...prev,
       endDate: value,
     }));
+  }
+
+  async function onSearch() {
+    // let s = "";
+    // Object.keys(searchField).forEach((key: string) => {
+    //   s += key + ": " + searchField[key] + "\n";
+    // })
+    // alert(s);
+
+    const response: any = await api.post('/stocks/search-activities', searchField);
+
+    
+    setOpenSearchDialog(false);
   }
 
   return (
@@ -109,21 +133,13 @@ export const StaffTrackingPage = () => {
 
       field={searchField}
       updateField={updateSearchField}
-
-
-
-      name={searchField.name}
-      startDate={searchField.startDate}
-      endDate={searchField.endDate}
-      colors={searchField.colors}
+      setStaff={setStaff}
+      updateCheckBox={updateCheckBox}
+      
       onNameChange={updateSearchField}
       onStartDateChange={setStartDate}
       onEndDateChange={setEndDate}
-      onColorsChange={updateSearchField}
-      onOk={() => {
-        alert(searchField);
-        setOpenSearchDialog(false);
-      }}
+      onSearch={onSearch}
       onCancel={() => setOpenSearchDialog(false)}
       />
 

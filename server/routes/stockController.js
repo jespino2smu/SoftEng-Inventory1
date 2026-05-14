@@ -453,3 +453,119 @@ exports.updateProduct = async (req, res) => {
         res.status(500).json({ message: "Error", details: error.message });
     }
 };
+
+exports.searchActivities = async (req, res) => {
+    const { productId, staffId, startDate, endDate, dispatch, inventory, received } = req.body;
+
+    let s = "";
+    s += "productId: " + productId + "\n";
+    s += "staffId: " + staffId + "\n";
+    s += "startDate: " + startDate + "\n";
+    s += "endDate: " + endDate + "\n";
+    s += "dispatch: " + dispatch + "\n";
+    s += "inventory: " + inventory + "\n";
+    s += "received: " + received + "\n";
+    console.log(s);
+    try {
+        const ids = [];
+
+        let result;
+        // const [result] = await exports.pool.execute(
+        //     "CALL SearchActivities(?, ?, ?, ?, ?, ?, ?);",
+        //     [productId, staffId, startDate, endDate, dispatch, inventory, received]
+        // );
+
+        let i = 0;
+        let s = "";
+        //console.log("Products: " + result[0]);
+        
+        
+        if (productId) {
+            [result] = await exports.pool.execute(
+                "CALL SearchActivitiesByProduct(?);", [productId]
+            );
+            
+            s += "Products: \n";
+            for (i = 0; i < result[0].length; i++) {
+                Object.keys(result[0][i]).forEach(key => {
+                    s += "    " + result[0][i][key] + "\n";
+                })
+            }
+        }
+
+        if (staffId) {
+            [result] = await exports.pool.execute(
+                "CALL SearchActivitiesByStaff(?);", [staffId]
+            );
+
+            s += "Staff:\n";
+            for (i = 0; i < result[0].length; i++) {
+                Object.keys(result[0][i]).forEach(key => {
+                    s += "    " + result[0][i][key] + "\n";
+                })
+            }
+        }
+
+        const activityTypesAllFalse = !received && !inventory && !received;
+
+        if (dispatch || activityTypesAllFalse) {
+            [result] = await exports.pool.execute(
+                "CALL SearchActivitiesByType(?);", ['Dispatch']
+            );
+            
+            s += "Dispatch:\n";
+            for (i = 0; i < result[0].length; i++) {
+                Object.keys(result[0][i]).forEach(key => {
+                    s += "    " + result[0][i][key] + "\n";
+                })
+            }
+        }
+        
+        if (inventory || activityTypesAllFalse) {
+            [result] = await exports.pool.execute(
+                "CALL SearchActivitiesByType(?);", ['Inventory']
+            );
+            
+            s += "Inventory:\n";
+            for (i = 0; i < result[0].length; i++) {
+                Object.keys(result[0][i]).forEach(key => {
+                    s += "    " + result[0][i][key] + "\n";
+                })
+            }
+        }
+        
+        if (received || activityTypesAllFalse) {
+            [result] = await exports.pool.execute(
+                "CALL SearchActivitiesByType(?);", ['Receive']
+            );
+            
+            s += "Receive:\n";
+            for (i = 0; i < result[0].length; i++) {
+                Object.keys(result[0][i]).forEach(key => {
+                    s += "    " + result[0][i][key] + "\n";
+                })
+            }
+        }
+
+
+
+
+
+
+
+
+        console.log(s);
+
+
+
+
+
+        //console.log(productId);
+        //res.status(200).json(result);
+        res.status(201).json({ message: "success" });
+
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ message: "Error", details: error.message });
+    }
+};
