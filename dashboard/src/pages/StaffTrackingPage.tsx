@@ -31,6 +31,7 @@ export const StaffTrackingPage = () => {
   const [openSearchDialog, setOpenSearchDialog] = useState<any>([]);
 
   const emptySearchField = {
+    productId: null,
     name: '',
     startDate: null,
     endDate: null,
@@ -56,6 +57,26 @@ export const StaffTrackingPage = () => {
 
 
 
+  function updateSearchField(e: any) {
+    setSearchField((prev: any) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }))
+  }
+
+  function setStartDate(value: any) {
+    setSearchField((prev: any) => ({
+      ...prev,
+      startDate: value,
+    }));
+  }
+  
+  function setEndDate(value: any) {
+    setSearchField((prev: any) => ({
+      ...prev,
+      endDate: value,
+    }));
+  }
 
   return (
     <Box>
@@ -85,36 +106,22 @@ export const StaffTrackingPage = () => {
 
     <ActivitySearchDialog
       open={openSearchDialog}
+
+      field={searchField}
+      updateField={updateSearchField}
+
+
+
       name={searchField.name}
       startDate={searchField.startDate}
       endDate={searchField.endDate}
       colors={searchField.colors}
-      onNameChange={(value) =>
-        setSearchField((prev: any) => ({
-          ...prev,
-          name: value,
-        }))
-      }
-      onStartDateChange={(date) =>
-        setSearchField((prev: any) => ({
-          ...prev,
-          startDate: date,
-        }))
-      }
-      onEndDateChange={(date) =>
-        setSearchField((prev: any) => ({
-          ...prev,
-          endDate: date,
-        }))
-      }
-      onColorsChange={(colors) =>
-        setSearchField((prev: any) => ({
-          ...prev,
-          colors,
-        }))
-      }
+      onNameChange={updateSearchField}
+      onStartDateChange={setStartDate}
+      onEndDateChange={setEndDate}
+      onColorsChange={updateSearchField}
       onOk={() => {
-        console.log(searchField);
+        alert(searchField);
         setOpenSearchDialog(false);
       }}
       onCancel={() => setOpenSearchDialog(false)}

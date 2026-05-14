@@ -38,10 +38,13 @@ type ActivitySearchDialogProps = {
   endDate: Date | null;
   colors: ColorState;
 
-  onNameChange: (value: string) => void;
-  onStartDateChange: (date: Date | null) => void;
-  onEndDateChange: (date: Date | null) => void;
-  onColorsChange: (colors: ColorState) => void;
+  field: any;
+  updateField: (e: any) => void;
+
+  onNameChange: (name: string, value: any) => void;
+  onStartDateChange: (date: any) => void;
+  onEndDateChange: (date: any) => void;
+  onColorsChange: (name: string, colors: ColorState) => void;
 
   onOk: () => void;
   onCancel: () => void;
@@ -53,6 +56,10 @@ const ActivitySearchDialog: React.FC<ActivitySearchDialogProps> = ({
   startDate,
   endDate,
   colors,
+
+  field,
+  updateField,
+
   onNameChange,
   onStartDateChange,
   onEndDateChange,
@@ -63,15 +70,12 @@ const ActivitySearchDialog: React.FC<ActivitySearchDialogProps> = ({
   const handleCheckboxChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-  const [productSuggestions, setProductSuggestions] = useState<any[]>([]);
-    const [searchFieldValidity, setSearchFieldValidity] = useState<boolean>(false);
 
-    onColorsChange({
-      ...colors,
-      [event.target.name]: event.target.checked,
-    });
   };
 
+  const [productSuggestions, setProductSuggestions] = useState<any[]>([]);
+    const [searchFieldValidity, setSearchFieldValidity] = useState<boolean>(false);
+    
   useEffect(() => {
     updateData();
   }, []);
@@ -108,11 +112,19 @@ const ActivitySearchDialog: React.FC<ActivitySearchDialogProps> = ({
 
 
   function handleSearchSuggestionClick(id: number, name: string) {
-    setCurrentProduct(prev => ({
-      ...prev,
-      ProductId: id,
-      Name: name
-    }));
+    // alert(id + " " + name);
+    const data = {
+      target: {
+        name: 'productId',
+        value: id
+      }
+    }
+    updateField(data);
+    // setCurrentProduct(prev => ({
+    //   ...prev,
+    //   ProductId: id,
+    //   Name: name
+    // }));
   }
 
   return (
@@ -134,19 +146,18 @@ const ActivitySearchDialog: React.FC<ActivitySearchDialogProps> = ({
                 onSuggestionPicked={handleSearchSuggestionClick}/>
 
             <TextField
+              name="name"
               label="Name"
               fullWidth
-              value={name}
-              onChange={(e) => onNameChange(e.target.value)}
+              value={field.name}
+              onChange={updateField}
             />
 
-            {/* Start Date */}
             <DatePicker
+              name="startDate"
               label="Start Date"
-              value={startDate}
-              onChange={(newValue) =>
-                onStartDateChange(newValue)
-              }
+              value={field.startDate}
+              onChange={onStartDateChange}
               slotProps={{
                 textField: {
                   fullWidth: true,
@@ -154,13 +165,11 @@ const ActivitySearchDialog: React.FC<ActivitySearchDialogProps> = ({
               }}
             />
 
-            {/* End Date */}
             <DatePicker
+              name="endDate"
               label="End Date"
-              value={endDate}
-              onChange={(newValue) =>
-                onEndDateChange(newValue)
-              }
+              value={field.endDate}
+              onChange={onEndDateChange}
               slotProps={{
                 textField: {
                   fullWidth: true,
