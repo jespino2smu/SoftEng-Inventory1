@@ -393,6 +393,7 @@ const StockMovementPage = ({
           >
             Add Item
           </Button>
+          { role === "Manager" &&
           <Button
             sx={
               useMediaQuery("(orientation: portrait)")?
@@ -407,7 +408,7 @@ const StockMovementPage = ({
             variant="contained" 
           >
             Add Staff
-          </Button>
+          </Button>}
 
           <Button
             onClick={handleCloseItem}

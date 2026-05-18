@@ -78,7 +78,7 @@ export const DashboardPage = () => {
 
 
   function onSubmit(movement: Movement) {
-    alert(staff.length + " " + staff);
+    //alert(staff.length + " " + staff);
     if (movement === "Dispatch") {
       addActivity(movement, dispatchStocks);
       setDisplayDispatchStocks(false);

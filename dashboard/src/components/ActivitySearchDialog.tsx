@@ -121,7 +121,7 @@ const ActivitySearchDialog: React.FC<ActivitySearchDialogProps> = ({
         s += "    " + key + ": " + response.data[i][key] + "\n";
       })
     }
-    alert(s);
+    //alert(s);
     setStaffList(response.data);
 
     //setStaffList(response.data);

@@ -110,7 +110,7 @@ export const StaffTrackingPage = () => {
           width: '100%',
           height: '40px'
         }}>
-        <Button
+        {/* <Button
           variant="contained"
           size="small"
           onClick={() => setOpenSearchDialog(true)}
@@ -124,7 +124,7 @@ export const StaffTrackingPage = () => {
           }}>
           <SearchIcon />
           Search
-        </Button>
+        </Button> */}
       </Stack>
 
 
