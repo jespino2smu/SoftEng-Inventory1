@@ -208,6 +208,24 @@ DELIMITER ;
 
 -- CALL SearchActivitiesByStaff(1);
 
+/* =================================================== */
+
+CREATE PROCEDURE TrackStaff(IN id INT)
+BEGIN
+	SELECT A.ActivityId, ActivityType, Date, ProductName, PreviousValue, Quantity
+	FROM handling_staff AS S
+	LEFT JOIN stock_activity AS A
+	ON S.ActivityId = A.ActivityId
+	LEFT JOIN handled_stock AS HP
+	ON HP.ActivityId = A.ActivityId
+	LEFT JOIN product AS P
+	ON P.ProductId = HP.ProductId
+	WHERE StaffId= 2;
+END //
+DELIMITER ;
+
+-- CALL TrackStaff(2);
+
 /* ================ */
 
 DELIMITER //
