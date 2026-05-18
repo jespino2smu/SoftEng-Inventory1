@@ -11,5 +11,14 @@ module.exports.setPool = function(pool) {
 router.post('/get-products', authenticateToken, stockController.getProducts);
 router.post('/add-activity', authenticateToken, stockController.addActivity);
 router.post('/get-stock-activities', authenticateToken, stockController.getStockActivities);
+router.post('/list-products', authenticateToken, stockController.listProductQuantities);
+router.post('/get-staff', authenticateToken, stockController.getStaff);
+router.post('/get-issues', authenticateToken, stockController.getIssues);
+router.post('/check-product-duplicate', authenticateToken, stockController.checkProductDuplicate);
+router.post('/add-product', authenticateToken, stockController.addProduct);
+router.post('/delete-product', authenticateToken, stockController.deleteProduct);
+router.post('/update-product', authenticateToken, stockController.updateProduct);
 
+
+router.post('/search-activities', authenticateToken, stockController.searchActivities);
 

@@ -2,6 +2,14 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 
+
+// ----------------------------
+// For localhost (disable when using proxy)
+const cors = require('cors');
+app.use(cors());
+// ----------------------------
+
+
 //const cors = require('cors');
 // app.use(cors({
 //   origin: 'https://https://irksomely-unconditional-glenna.ngrok-free.dev',

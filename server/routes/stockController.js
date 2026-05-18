@@ -1,11 +1,153 @@
 exports.pool = null;
 
+
+
+exports.listProductQuantities = async (req, res) => {
+    try {
+        let result = [];
+        
+        [result] = await exports.pool.execute(
+            "CALL GetProductsWithQuantity()"
+        );
+
+        const negativeQuantity = [];
+        const zeroQuantity = [];
+        const criticalLowQuantity = [];
+        const moderateLowQuantity = [];
+        const normalQuantity = [];
+
+        let invalidQuantity = 0;
+        let outOfStock = 0;
+        let criticalLowStock = 0;
+        let moderateLowStock = 0;
+        let quantityMismatch = 0;
+
+        for (let i = 0; i < result[0].length; i++) {
+            //console.log(``);
+            result[0][i]["StockBalance"] = Number(result[0][i]["StockBalance"]);
+            if (result[0][i]["StockBalance"] < 0) {
+                result[0][i].Warning = true;
+                result[0][i].StockImbalance = true;
+                invalidQuantity++;
+                negativeQuantity.push(result[0][i]);
+            } else if (result[0][i]["StockBalance"] === 0) {
+                result[0][i].Warning = true;
+                result[0][i].StockImbalance = true;
+                outOfStock++;
+                zeroQuantity.push(result[0][i]);
+            } else if (result[0][i]["StockBalance"] <= result[0][i]["CriticalDepletionThreshold"]) {
+                result[0][i].Warning = true;
+                result[0][i].StockImbalance = true;
+                criticalLowStock++;
+                criticalLowQuantity.push(result[0][i]);
+            } else if (result[0][i]["StockBalance"] <= result[0][i]["ModerateDepletionThreshold"]) {
+                result[0][i].Moderate = true;
+                moderateLowStock++;
+                moderateLowQuantity.push(result[0][i]);
+            } else {
+                normalQuantity.push(result[0][i]);
+            }
+
+            if (result[0][i]["StockBalance"] != Number(result[0][i]["Inventory"])) {
+                result[0][i].Moderate = true;
+                result[0][i].QuantityDiscrepancy = true;
+                quantityMismatch++;
+            }
+        }
+
+        const products = [];
+        products.push(...negativeQuantity);
+        products.push(...zeroQuantity);
+        products.push(...criticalLowQuantity);
+        products.push(...moderateLowQuantity);
+        products.push(...normalQuantity);
+
+        //console.log(products);
+
+        let issuesDetected = false;
+        if (invalidQuantity > 0 || outOfStock > 0 || criticalLowStock > 0 || moderateLowStock > 0 || quantityMismatch > 0) {
+            issuesDetected = true;
+        }
+        res.status(201).json({
+            issuesDetected: issuesDetected,
+            invalidQuantity: invalidQuantity,
+            outOfStock: outOfStock,
+            criticalLowStock: criticalLowStock,
+            moderateLowStock: moderateLowStock,
+            quantityMismatch: quantityMismatch,
+            products: products
+        });
+
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ message: "Error", details: error.message });
+    }
+};
+
+function getStockValues(rows) {
+    const stockImbalances = [];
+    const quantityDisrepancies = [];
+    const moderateDepletion = [];
+    const criticalDepletion = [];
+
+    let stockBalance = 0;
+
+    console.log("\n\n");
+    
+    Object.keys(rows).forEach(key => {
+        stockBalance = rows[key].StockIn - rows[key].StockOut;
+
+        // stockImbalances & quantityDisrepancies have same formula as
+        // PROCEDURE ValidateStockDiscrepancies
+        if (stockBalance < 0) {
+            stockImbalances.push(rows[key].ProductName);
+        }
+        if (stockBalance != rows[key].Inventory) {
+            quantityDisrepancies.push(rows[key].ProductName);
+        }
+        if (stockBalance <= rows[key].ModerateDepletionThreshold || rows[key].Inventory <= rows[key].ModerateDepletionThreshold) {
+            moderateDepletion.push(rows[key].ProductName);
+        }
+        if (stockBalance <= rows[key].CriticalDepletionThreshold || rows[key].Inventory <= rows[key].CriticalDepletionThreshold) {
+            criticalDepletion.push(rows[key].ProductName);
+        }
+    });
+    
+    const summary = {
+        stockImbalances: stockImbalances,
+        quantityDisrepancies: quantityDisrepancies,
+        moderateDepletion: moderateDepletion,
+        criticalDepletion: criticalDepletion
+    }
+
+    return summary;
+}
+
+exports.getIssues = async (req, res) => {
+    try {
+        let result = [];
+        
+        [result] = await exports.pool.execute(
+            "CALL GetStockAllValues()"
+        );
+
+        const summary = getStockValues(result[0]);
+        // console.log("All Summary:", summary);
+        // console.log("\n\n")
+
+        res.status(201).json(summary);
+
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ message: "Error", details: error.message });
+    }
+};
+
 exports.getProducts = async (req, res) => {
     //console.log("Ran!");
     const { userId } = req.body;
 
     try {
-
         const [result] = await exports.pool.execute(
             "CALL GetEmptyProducts()"
         );
@@ -24,7 +166,7 @@ exports.getProducts = async (req, res) => {
 
 exports.addActivity = async (req, res) => {
     console.log("Add Activity");
-    const { movement, stocks } = req.body;
+    const { movement, stocks, staff } = req.body;
 
     // console.log("activity: " + activity);
     // console.log("userId: " + req.userId);
@@ -37,7 +179,6 @@ exports.addActivity = async (req, res) => {
     }
 
     try {
-
         const [result] = await exports.pool.execute(
             "CALL CreateActivity(?, ?);",
             [req.userId, movement]
@@ -50,7 +191,7 @@ exports.addActivity = async (req, res) => {
         let [stockInfo] = [];
 
         stocks.forEach(async (stock, index) => {
-            console.log(`\tIndex ${index}:\n\tName: ${stock.ProductId}\n\tQuantity ${stock.Quantity}\n`);
+            //console.log(`\tIndex ${index}:\n\tName: ${stock.ProductId}\n\tQuantity ${stock.Quantity}\n`);
             [stockInfo] = await exports.pool.execute(
                 "CALL AddHandledStock(?, ?, ?);",
                 [activityId, stock.ProductId, stock.Quantity]
@@ -60,6 +201,19 @@ exports.addActivity = async (req, res) => {
         [stockInfo] = await exports.pool.execute(
             "CALL AddHandledStaff(?, ?);",
             [req.userId, activityId]
+        );
+
+        staff.forEach(async (staff) => {
+            console.log(`\StaffId: ${staff.StaffId}\n\Surname ${staff.LastName}\n`);
+            [stockInfo] = await exports.pool.execute(
+                "CALL AddHandledStaff(?, ?);",
+                [staff.StaffId, activityId]
+            );
+        });
+
+        await exports.pool.execute(
+            "CALL ValidateStockDiscrepancies(?);",
+            [activityId]
         );
 
         res.status(200).json(result);
@@ -195,6 +349,220 @@ exports.getStockActivities = async (req, res) => {
         }
 
         res.status(200).json(stockActivitySummary);
+
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ message: "Error", details: error.message });
+    }
+};
+
+exports.getStaff = async (req, res) => {
+    try {
+        const [result] = await exports.pool.execute(
+            "CALL GetStaff()"
+        );
+        for (let i = 0; i < result[0].length; i++) {
+            result[0][i].Selected = false;
+        }
+        //console.log("Start");
+        console.log(result);
+
+        res.status(201).json(result[0]);
+
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ message: "Error", details: error.message });
+    }
+};
+
+exports.checkProductDuplicate = async (req, res) => {
+    const { productName } = req.body;
+
+    console.log("Ran");
+    try {
+        const [productNameExists] = await exports.pool.execute(
+            "CALL CheckProductExists(?);", [productName]
+        );
+
+        console.log(Boolean(productNameExists[0][0].nameExists));
+        if (Boolean(productNameExists[0][0].nameExists)) {
+            return res.status(500).json({
+                message: 'productNameExists'
+            });
+        }
+
+        res.status(200).json({ message: 'No duplicate name'});
+
+        // res.status(201).json({ message: "Success!" });
+
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ message: "Error", details: error.message });
+    }
+};
+
+exports.addProduct = async (req, res) => {
+    const { productName, moderateThreshold, criticalThreshold } = req.body;
+
+    console.log("Ran");
+    try {
+        const [result] = await exports.pool.execute(
+            "CALL NewProduct(?, ?, ?);",
+            [productName, moderateThreshold, criticalThreshold]
+        );
+        //res.status(200).json(result);
+        res.status(201).json({ message: "success" });
+
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ message: "Error", details: error.message });
+    }
+};
+
+exports.deleteProduct = async (req, res) => {
+    const { productId } = req.body;
+
+    console.log("Ran");
+    try {
+        const [result] = await exports.pool.execute(
+            "CALL DeleteProduct(?);", [productId]
+        );
+        //res.status(200).json(result);
+        res.status(201).json({ message: "success" });
+
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ message: "Error", details: error.message });
+    }
+};
+
+
+exports.updateProduct = async (req, res) => {
+    const { productId, productName, moderateThreshold, criticalThreshold } = req.body;
+
+    console.log("Ran");
+    try {
+        const [result] = await exports.pool.execute(
+            "CALL UpdateProduct(?, ?, ?, ?);", [productId, productName, moderateThreshold, criticalThreshold]
+        );
+        //res.status(200).json(result);
+        res.status(201).json({ message: "success" });
+
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ message: "Error", details: error.message });
+    }
+};
+
+exports.searchActivities = async (req, res) => {
+    const { productId, staffId, startDate, endDate, dispatch, inventory, received } = req.body;
+
+    let s = "";
+    s += "productId: " + productId + "\n";
+    s += "staffId: " + staffId + "\n";
+    s += "startDate: " + startDate + "\n";
+    s += "endDate: " + endDate + "\n";
+    s += "dispatch: " + dispatch + "\n";
+    s += "inventory: " + inventory + "\n";
+    s += "received: " + received + "\n";
+    console.log(s);
+    try {
+        const ids = [];
+
+        let result;
+        // const [result] = await exports.pool.execute(
+        //     "CALL SearchActivities(?, ?, ?, ?, ?, ?, ?);",
+        //     [productId, staffId, startDate, endDate, dispatch, inventory, received]
+        // );
+
+        let i = 0;
+        let s = "";
+        //console.log("Products: " + result[0]);
+        
+        
+        if (productId) {
+            [result] = await exports.pool.execute(
+                "CALL SearchActivitiesByProduct(?);", [productId]
+            );
+            
+            s += "Products: \n";
+            for (i = 0; i < result[0].length; i++) {
+                Object.keys(result[0][i]).forEach(key => {
+                    s += "    " + result[0][i][key] + "\n";
+                })
+            }
+        }
+
+        if (staffId) {
+            [result] = await exports.pool.execute(
+                "CALL SearchActivitiesByStaff(?);", [staffId]
+            );
+
+            s += "Staff:\n";
+            for (i = 0; i < result[0].length; i++) {
+                Object.keys(result[0][i]).forEach(key => {
+                    s += "    " + result[0][i][key] + "\n";
+                })
+            }
+        }
+
+        const activityTypesAllFalse = !received && !inventory && !received;
+
+        if (dispatch || activityTypesAllFalse) {
+            [result] = await exports.pool.execute(
+                "CALL SearchActivitiesByType(?);", ['Dispatch']
+            );
+            
+            s += "Dispatch:\n";
+            for (i = 0; i < result[0].length; i++) {
+                Object.keys(result[0][i]).forEach(key => {
+                    s += "    " + result[0][i][key] + "\n";
+                })
+            }
+        }
+        
+        if (inventory || activityTypesAllFalse) {
+            [result] = await exports.pool.execute(
+                "CALL SearchActivitiesByType(?);", ['Inventory']
+            );
+            
+            s += "Inventory:\n";
+            for (i = 0; i < result[0].length; i++) {
+                Object.keys(result[0][i]).forEach(key => {
+                    s += "    " + result[0][i][key] + "\n";
+                })
+            }
+        }
+        
+        if (received || activityTypesAllFalse) {
+            [result] = await exports.pool.execute(
+                "CALL SearchActivitiesByType(?);", ['Receive']
+            );
+            
+            s += "Receive:\n";
+            for (i = 0; i < result[0].length; i++) {
+                Object.keys(result[0][i]).forEach(key => {
+                    s += "    " + result[0][i][key] + "\n";
+                })
+            }
+        }
+
+
+
+
+
+
+
+
+        console.log(s);
+
+
+
+
+
+        //console.log(productId);
+        //res.status(200).json(result);
+        res.status(201).json({ message: "success" });
 
     } catch (error) {
         console.error("Error:", error);

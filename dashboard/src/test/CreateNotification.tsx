@@ -34,9 +34,25 @@ const CreateNotification = () => {
       setStatus({ type: 'error', msg: 'Failed to create notification.' });
     }
   };
+  
+  const test = async (e: any) => {
+    e.preventDefault();
+    try {
+        
+      await api.post('/stocks/list-products', formData);
+      setStatus({ type: 'success', msg: 'Notification generated successfully!' });
+      setFormData({ type: 'info', message: '' }); // Reset form
+    } catch (error) {
+      setStatus({ type: 'error', msg: 'Failed to create notification.' });
+    }
+  };
 
   return (
     <Container maxWidth="sm" sx={{ mt: 8 }}>
+      <Button variant="contained" onClick={test}>
+        Test
+      </Button>
+
       <Paper elevation={6} sx={{ p: 4, borderRadius: 3 }}>
         <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', mb: 3 }}>
           Generate New Notification

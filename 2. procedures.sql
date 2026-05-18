@@ -14,6 +14,55 @@ BEGIN
 END //
 DELIMITER ;
 
+
+DELIMITER //
+CREATE PROCEDURE AuditLogIp(
+	IN Ip VARCHAR(100),
+	IN StaffID INT,
+	IN TableName VARCHAR(255),
+	IN RecordId int,
+	IN LogDescription LONGTEXT)
+BEGIN
+	INSERT INTO audit_log(StaffID, TableName, RecordId, Ip, LogDescription)
+	VALUES (StaffID, TableName, RecordId, Ip, LogDescription);
+END //
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE AuditLogSqlError(
+	IN Ip VARCHAR(100),
+	IN StaffID INT,
+	IN TableName VARCHAR(255),
+	IN RecordId int,
+	IN Description LONGTEXT,
+    
+	IN error_number INT,
+	IN error_sqlstate CHAR(5),
+    IN error_message TEXT
+)
+BEGIN
+	CALL AuditLogIp(Ip, StaffID, TableName, RecordId, CONCAT
+    (
+		Description, ", MySQL Exception (Error Number=", error_number,
+        ", SQL State=", error_sqlstate, "(Error Message=", error_message,
+        ")."
+	));
+END //
+DELIMITER ;
+
+/* =================================================== */
+
+DELIMITER //
+CREATE PROCEDURE CheckStaff(IN Ip VARCHAR(100), IN Username_in VARCHAR(50), IN FirstName_in VARCHAR(50), IN LastName_in VARCHAR(50))
+BEGIN
+	SELECT
+		SUM(IF(Username=Username_in, 1, 0)) AS 'duplicateUsername',
+		SUM(IF(FirstName=FirstName_in AND LastName=LastName_in, 1, 0)) AS 'duplicateName'
+	FROM staff;
+    CALL AuditLogIp(Ip, NULL, "staff", -1, CONCAT("Login attempt with Username='", Username_in, "'"));
+END //
+DELIMITER ;
 /* =================================================== */
 
 DELIMITER //
@@ -87,33 +136,6 @@ DELIMITER ;
 /* =================================================== */
 
 DELIMITER //
-CREATE PROCEDURE AddProduct
-(
-	IN StaffID INT,
-	IN UsageId INT,
-	IN ProductName VARCHAR(100),
-    IN StockIn DECIMAL
-)
-BEGIN
-	DECLARE id INT;
-
-	INSERT INTO product
-    (UsageId, ProductName, Inventory, StockIn, StockOut)
-    VALUES
-    (UsageId, ProductName, StockIn, 0, 0);
-    
-    SELECT LAST_INSERT_ID()
-    INTO id;
-    
-    CALL AuditLog(StaffID, 'Product', id, CONCAT(
-		'Product added: {ProductName: "', ProductName, '}')
-    );
-END //
-DELIMITER ;
-
-/* =================================================== */
-
-DELIMITER //
 CREATE PROCEDURE SearchProductByName(IN ProductName VARCHAR(100))
 BEGIN
 	SELECT *
@@ -135,40 +157,6 @@ DELIMITER ;
 
 /* =================================================== */
 
-DELIMITER //
-CREATE PROCEDURE CreateActivity
-(
-	IN StaffID INT,
-	IN ActivityType ENUM('Receive', 'Dispatch', 'Inventory')
-)
-BEGIN
-	INSERT INTO stock_activity (ActivityType)
-	VALUES (ActivityType);
-    
-    SELECT LAST_INSERT_ID() AS id;
-END //
-DELIMITER ;
-/* ================ */
-DELIMITER //
-CREATE PROCEDURE AddHandledStaff(
-	IN StaffID INT, IN ActivityID INT
-)
-BEGIN
-	INSERT INTO handling_staff (StaffID, ActivityId)
-    VALUES (StaffID, ActivityId);
-END //
-DELIMITER ;
-/* ================ */
-DELIMITER //
-CREATE PROCEDURE AddHandledStock(
-	IN ActivityId INT, IN ProductId INT, IN Quantity DECIMAL(10,0)
-)
-BEGIN
-	INSERT INTO handled_stock (ActivityId, ProductId, Quantity)
-    VALUES (ActivityId, ProductId, Quantity);
-END //
-DELIMITER ;
-/* =================================================== */
 
 DELIMITER //
 CREATE PROCEDURE GetMinMaxStockActivitiesId()
@@ -226,26 +214,141 @@ DELIMITER ;
 
 -- CALL GetHandledStocks(1);
 
-/* ================ */
+
+
+
+
+SELECT
+	IF(P.StockIn - P.StockOut >= 0, False, True),
+	IF(P.StockIn - P.StockOut = Inventory, False, True)
+FROM product AS P
+RIGHT JOIN handled_stock AS S
+ON P.ProductId = S.ProductId
+WHERE ActivityId = 7;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- CALL CheckStockDiscrepancies(9);
 
 DELIMITER //
-CREATE PROCEDURE Login(IN input_username VARCHAR(100))
+CREATE PROCEDURE DeclareStockDiscrepancy()
 BEGIN
+
+END //
+DELIMITER ;
+
+
+
+/* ================ */
+
+
+DELIMITER //
+CREATE PROCEDURE Login(IN Ip VARCHAR(100), IN input_username VARCHAR(100))
+BEGIN
+	DECLARE staff_id INT;
     IF EXISTS (SELECT 1 FROM staff WHERE username = input_username) THEN
+    
+		SELECT StaffId
+        INTO staff_id
+        FROM staff
+        WHERE username = input_username;
+        
         SELECT StaffId AS Id, Username, Password, FirstName, LastName, MiddleInitial, Role
         FROM staff 
         WHERE username = input_username;
+        
+        CALL AuditLogIp
+        (
+			Ip, staff_id, "staff", staff_id,
+			CONCAT("Login (Username='", input_username, "').")
+		);
     ELSE
         SELECT true AS NotFound;
+        
+        CALL AuditLogIp(Ip, staff_id, "staff", -1, "Login failed with non-existent user.");
+    
     END IF;
 END //
 DELIMITER ;
 
+/* ================ */
+
+DELIMITER //
+CREATE PROCEDURE Signup(
+	IN Ip VARCHAR(100), IN Username VARCHAR(50),
+    IN Password LONGTEXT, IN FirstName VARCHAR(50),
+    IN LastName VARCHAR(50), IN MiddleInitial VARCHAR(50))
+BEGIN
+	DECLARE newStaffId INT;
+
+    DECLARE error_message TEXT; DECLARE error_sqlstate CHAR(5); DECLARE error_number INT;
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        GET DIAGNOSTICS CONDITION 1
+            error_sqlstate = RETURNED_SQLSTATE, error_number = MYSQL_ERRNO, error_message = MESSAGE_TEXT;
+        CALL AuditLogSqlError(Ip, NULL, "staff", -1, CONCAT
+        (
+			"Signup Error (Username='", Username, "', FirstName='", FirstName,
+            "', MiddleInitial='", MiddleInitial, "', LastName='", LastName, "')"
+        ), error_number, error_sqlstate, error_message);
+    END;
+
+	INSERT INTO staff(Username, Password, FirstName, LastName, MiddleInitial)
+    VALUES (Username, Password, FirstName, LastName, MiddleInitial);
+    
+	CALL AuditLogIp(Ip, LAST_INSERT_ID(), "staff", LAST_INSERT_ID(), CONCAT(
+		"Signed up staff (Username='", Username, "', FirstName='", FirstName,
+        "', MiddleInitial='", MiddleInitial, "', LastName='", LastName, "')"
+    ));
+END //
+DELIMITER ;
+
+-- CALL Signup("", "emmanuel", "Password", "First Name", "Last Name", "Middle Initial")
+
+/* ================ */
+
+DELIMITER //
+CREATE PROCEDURE GetStaff()
+BEGIN
+	SELECT StaffId, FirstName, MiddleInitial, LastName
+	FROM staff
+    WHERE Role='Staff';
+END //
+DELIMITER ;
+
+-- CALL GetStaff();
+
+INSERT INTO `staff` VALUES
+(0,'Superadmin','Manager','AAAAAAAA',NULL,NULL,NULL),
+(2,'admin','Manager','$2b$10$vVgoegRDTJBZR7NPap4UgedfQUZrXbgT3Qtx0FJ6EYz7wSZ1e49iK','Admin','A','Admin'),
+(41,'cynthia','Staff','$2b$10$Ru14rIMkOJ7cF5ZMfoNlzOaF.nL8M8Bf1BBd4H46TODMLBajJIG..','Cynthia','P','Balesteros'),
+(42,'esmeralda','Staff','$2b$10$VtUq.STGzk3XGQ4rEuJA8eHeyE/QEKTlcOsQDSZooGaaxgC/m2k1.','Esmeralda','A','Concepcion'),
+(43,'pedrino','Staff','$2b$10$vBO4kd1H3lxoPiaX0F1HdeyN7zQX8.enPqGBbdPVlwfo9mk9KiDLS','Pedrino','R','Resurreccion'),
+(44,'cecilio','Staff','$2b$10$2OVWT2S0iSjstcQ09Y7YwOgHlIXSx5szpUMpTVZ5FgJoL2ddz5ZZS','Cecilio','P','Buenavista'),
+(45,'leopoldo','Staff','$2b$10$m03LvUTug9GNOJm4mqlUbOVOS5jMVgYqjlRhoXBGY4M890Het7q9a','Leopoldo','J','Cervantes');
+
 /* ===================================================
 
+-- ===================================================
+
+
+
+/* ===================================================
 DEFAULT VALUES:
 */
 
+/*
 INSERT INTO staff (Username, Role, Password)
 VALUES ('Superadmin', 'Manager', 'AAAAAAAA');
 
@@ -260,23 +363,9 @@ CALL CreateStaff ('tess', 'tess', 'Teresita', 'C', 'Tarantino');
 CALL CreateStaff ('mateo', 'mateo', 'Mateo', 'A', 'Madriaga');
 CALL CreateStaff ('esme', 'esme', 'Esmeralda', 'S', 'Buenavista');
 
+*/
 /* ================ */
 
 
 INSERT INTO usage_category (UsageId, Name)
 VALUES (1, 'Ingredient');
-
--- Test Products
-CALL AddProduct(0, 1, 'Caramel Syrup', 10);
-CALL AddProduct(0, 1, 'Vanilla Syrup', 15);
-CALL AddProduct(0, 1, 'Mocha Syrup', 15);
-CALL AddProduct(0, 1, 'Coffee Syrup', 15);
-CALL AddProduct(0, 1, 'Hazelnut Syrup', 15);
-CALL AddProduct(0, 1, 'Salted Caramel Syrup', 15);
-CALL AddProduct(0, 1, 'Buttery Caramel Syrup', 15);
-CALL AddProduct(0, 1, 'Pumpkin Pie Syrup', 15);
-CALL AddProduct(0, 1, 'Forest Pine Syrup', 15);
-CALL AddProduct(0, 1, 'Cookie Butter Syrup', 15);
-CALL AddProduct(0, 1, 'Irish Cream Syrup', 15);
-CALL AddProduct(0, 1, 'Puremade Strawberry Syrup', 15);
-CALL AddProduct(0, 1, 'Dark Chocolate Syrup', 15);

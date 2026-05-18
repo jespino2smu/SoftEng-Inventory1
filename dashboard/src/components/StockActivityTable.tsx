@@ -38,7 +38,12 @@ export const StockActivityTable: React.FC<DataTableProps> = ({ rows }) => {
       width: '100%', overflowX: 'auto',
       }}>
       <Table aria-label="responsive table">
-        <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
+        <TableHead sx={{ backgroundColor: '#f5f5f5',
+          '& .MuiTableCell-root': {
+            py: 0.5,
+            lineHeight: 1.2,
+          },
+         }}>
           <TableRow>
             {/* Hide ID column on extra-small screens
             <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
@@ -47,7 +52,7 @@ export const StockActivityTable: React.FC<DataTableProps> = ({ rows }) => {
             <TableCell align="center"><strong>Products</strong></TableCell>
             <TableCell align="center"><strong>Staff</strong></TableCell>
             {/* Hide ID column on extra-small screens */ }
-            <TableCell
+            <TableCell align="center"
                 // sx={{
                 // display: { xs: 'none', sm:'table-cell' } }}
             >

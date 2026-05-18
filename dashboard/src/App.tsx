@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import Layout from './components/Layout';
 
-import { InventoryTracingPage } from './pages/InventoryTracingPage';
+import { StaffTrackingPage } from './pages/StaffTrackingPage';
 import { DashboardPage } from './pages/DashboardPage';
 import NotificationPage from './test/NotificationPage'
 import DropdownTextField from './components/DropdownTextField';
@@ -18,6 +18,8 @@ import ProtectedRoute from './pages/ProtectedRoute';
 
 import CreateNotification from './test/CreateNotification';
 import LogoutPage from './pages/LogoutPage';
+import { ProductListing } from './pages/ProductListing';
+
 
 //import StockMovementPage from './pages/StockMovementPage';
 
@@ -88,7 +90,8 @@ const App: React.FC = () => {
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<Layout><DashboardPage/></Layout>} />
             <Route path="/notifications" element={<Layout><NotificationPage /> </Layout>} />
-            <Route path="/tracing" element={<Layout><InventoryTracingPage /></Layout>} />
+            <Route path="/tracking" element={<Layout><StaffTrackingPage /></Layout>} />
+            <Route path="/products" element={<Layout><ProductListing /></Layout>} />
           </Route>
         </Routes>
       </Router>

@@ -1,23 +1,44 @@
 [
-  { 
-    "id": 1, 
-    "type": "red", 
+  {
+    "id": 1,
+    "type": "red",
     "message": "Critical Server Error: Database unreachable.",
     "timestamp": "2026-04-15T08:30:00Z",
     "isRead": false
   },
-  { 
-    "id": 2, 
-    "type": "yellow", 
+  {
+    "id": 2,
+    "type": "yellow",
     "message": "Warning: Disk space is at 85% capacity.",
     "timestamp": "2026-04-15T09:15:00Z",
     "isRead": false
   },
-  { 
-    "id": 3, 
-    "type": "info", 
+  {
+    "id": 3,
+    "type": "info",
     "message": "System update scheduled for 2:00 AM.",
     "timestamp": "2026-04-15T10:00:00Z",
+    "isRead": false
+  },
+  {
+    "id": 1778160128979,
+    "type": "info",
+    "message": "info",
+    "timestamp": "2026-05-07T13:22:08.979Z",
+    "isRead": false
+  },
+  {
+    "id": 1778160132841,
+    "type": "yellow",
+    "message": "warning",
+    "timestamp": "2026-05-07T13:22:12.841Z",
+    "isRead": false
+  },
+  {
+    "id": 1778160136788,
+    "type": "red",
+    "message": "critical",
+    "timestamp": "2026-05-07T13:22:16.788Z",
     "isRead": false
   }
 ]

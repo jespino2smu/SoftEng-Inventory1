@@ -4,12 +4,31 @@ const router = express.Router();
 const notificationController = require('./notificationController');
 const { authenticateToken } = require('../tokens');
 
+module.exports = router;
+
+module.exports.setPool = function(pool) {
+    notificationController.pool = pool;
+};
+
+router.post('/check-stock-discrepancies', authenticateToken, notificationController.getStockDiscrepancies);
+
+
+
+
+
+
+
+
+
 const notificationFile = './notifications.json';
 
 const getNotifications = () => {
   const data = fs.readFileSync(notificationFile);
   return JSON.parse(data);
 };
+
+
+
 
 const readData = () => {
   if (!fs.existsSync(notificationFile)) {
@@ -24,16 +43,13 @@ const writeData = (data) => {
   fs.writeFileSync(notificationFile, JSON.stringify(data, null, 2));
 };
 
-module.exports = router;
-
-module.exports.setPool = function(pool) {
-    notificationController.pool = pool;
-};
-
 router.post('/get', (req, res) => {
   const notifications = getNotifications();
   res.json(notifications);
 });
+
+
+
 
 router.patch('/set-read/:id', (req, res) => {
   const { id } = req.params;
@@ -66,3 +82,7 @@ router.post('/add', (req, res) => {
   writeData(notifications);
   res.status(201).json(newNotif);
 });
+
+
+
+

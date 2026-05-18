@@ -6,6 +6,7 @@ Box, Button, Dialog,
 DialogContent, DialogActions, Stack, Paper,
 Table, TableBody, TableCell, TableContainer, TableRow,
 useMediaQuery,
+Checkbox,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
@@ -14,7 +15,7 @@ import api from '../api/api';
 import { type Product} from '../types/Product';
 
 import { SearchField } from "../components/SearchField";
-import AddIcon from "@mui/icons-material/Add";
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import AssignmentAddIcon from '@mui/icons-material/AssignmentAdd';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import IncrementField from '../components/IncrementField';
@@ -23,21 +24,33 @@ import { getRole } from '../api/api';
 
 interface StockMovementProps {
   display: boolean;
-  data: Product[],
-  setData: Dispatch<SetStateAction<Product[]>>;
+  role: string;
+  itemData: Product[],
+  setItemData: Dispatch<SetStateAction<Product[]>>;
+  setStaffData: Dispatch<SetStateAction<any[]>>;
   submitLabel: string;
   onSubmit: () => void;
   onReturn: () => void;
+  onEmptyList: () => void;
+  onInvalidQuantity: (arg0: string) => void;
 }
 
-const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onReturn}: StockMovementProps) => {
+const StockMovementPage = ({
+  display, role, itemData, setItemData, setStaffData, submitLabel,
+  onSubmit, onReturn, onEmptyList, onInvalidQuantity}: StockMovementProps
+) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const [open, setOpen] = useState(false);
-  const [searchSuggestions, setSearchSuggestions] = useState<Product[]>([]);
+  const [dialogContent, setDialogContent] = useState("");
 
-  const [role, setRole] = useState<string>('');
+  const [openItem, setOpenItem] = useState(false);
+  const [productSuggestions, setProductSuggestions] = useState<Product[]>([]);
+  const [staffList, setStaffList] = useState<any[]>([]);
+
+  //const [role, setRole] = useState<string>('');
+
+  const [searchFieldValidity, setSearchFieldValidity] = useState<boolean>(false);
   
   const [currentProduct, setCurrentProduct] = useState<Product>({
     ProductId: 0,
@@ -45,25 +58,16 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
     Quantity: '',
   });
 
-
-//   const [items, setItems] = useState<Item[]>([
-//     { ProductId: 1, ProductName: "Apple Pie",},
-//     { ProductId: 2, ProductName: "Banana Bread"},
-//     { ProductId: 3, ProductName: "Cherry Tart"},
-//     { ProductId: 4, ProductName: "Blueberry Muffin"},
-//   ]);
-
-
   useEffect(() => {
     updateData();
-    const r: any = getRole();
-    setRole(r);
-  }, []);
+    //const r: any = getRole();
+    //setRole(r);
+  }, [display]);
 
   async function updateData() {
-  const response: any = await api.post('/stocks/get-products', {
-    activity: 'Inventory',
-  });
+    let response: any = await api.post('/stocks/get-products', {
+      activity: 'Inventory',
+    });
 
       // let n = "";
       // Object.keys(response.data[0]).forEach(key0 => {
@@ -74,14 +78,30 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
       // });
       // alert(n);
 
-    setSearchSuggestions(response.data[0]);
+    setProductSuggestions(response.data[0]);
+
+    response = await api.post('/stocks/get-staff');
+    // let s = "";
+    // for (let i = 0; i < response.data.length; i++) {
+    //   s += "\n";
+    //   Object.keys(response.data[i]).forEach(key => {
+    //     s += "    " + key + ": " + response.data[i][key] + "\n";
+    //   })
+    // }
+    // alert(s);
+
+    setStaffList(response.data);
+    //alert(JSON.stringify(response.data));
   }
 
 
-  const handleOpen = () => setOpen(true);
+  const handleOpenItem = (contentType: string) => {
+    setDialogContent(contentType);
+    setOpenItem(true)
+  };
 
-  const handleClose = () => {
-    setOpen(false);
+  const handleCloseItem = () => {
+    setOpenItem(false);
     setCurrentProduct({
         ProductId: 0,
         Name: '',
@@ -89,9 +109,9 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
     });
   };
 
-  const handleAdd = () => {
+  const handleAddItem = () => {
     //console.log("Adding Item:", newItem);
-    setData(prev => {
+    setItemData(prev => {
         const exists = prev.some(product => product.ProductId === currentProduct.ProductId);
 
         if (exists) {
@@ -105,8 +125,24 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
             return [...prev, currentProduct];
         }
     });
-    handleClose();
+    handleCloseItem();
   };
+
+  const handleAddStaff = () => {
+      const selectedStaff = staffList.filter(staff => staff.Selected === true);
+
+      // let s = "Selected Staff:\n";
+      // for (let i = 0; i < selectedStaff.length; i++) {
+      //   s += "\n";
+      //   Object.entries(selectedStaff[i]).forEach(([key, value]) => {
+      //     s += `    ${key}: ${value} \n`;
+      //   })
+      // }
+      // alert(s);
+      setStaffData(selectedStaff);
+    handleCloseItem();
+  };
+
 
   function handleSearchSuggestionClick(id: number, name: string) {
     setCurrentProduct(prev => ({
@@ -114,6 +150,29 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
       ProductId: id,
       Name: name
     }));
+  }
+
+  const onSubmitButtonClick = () => {
+    if (itemData.length === 0) {
+      onEmptyList();
+    } else {
+
+      for (let i = 0; i < itemData.length; i++) {
+        const quantity = parseInt(itemData[i].Quantity);
+        if (isNaN(quantity)) {
+          onInvalidQuantity("Quantity of items must be a valid number.");
+          return;
+        } else if (quantity <= 0) {
+          onInvalidQuantity("Quantity must be a positive number.");
+          return;
+        }
+      }
+      onSubmit();
+    }
+  };
+
+  function removeItem(index: number) {
+    setItemData(prevData => prevData.filter((_, i) => i !== index));
   }
 
 
@@ -146,38 +205,42 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
             width: '100%',
             height: '30px',
             mb: 2,
-            padding: '0 10px',
-            paddingTop: '15px'
           }}
         >
           <Stack direction="row" spacing="3px">
             <Button
               variant="contained"
               size="small"
-              onClick={handleOpen}
+              onClick={() => handleOpenItem("item")}
               sx={{
                 height: '36px',
                 padding: 0,
+                paddingLeft: '15px',
+                paddingRight: '15px',
                 margin: '0',
-                width: { xs: '30px', sm: '30px' }
+                width: isMobile? '30px' : 'fit-content'
               }}>
               <AssignmentAddIcon />
               {isMobile? "" : "Add Item"}
             </Button>
             
-            <Button
-              variant="contained"
-              size="small"
-              // onClick={handleOpen}
-              sx={{
-                height: '36px',
-                padding: 0,
-                margin: '0',
-                width: { xs: '30px', sm: '30px' }
-              }}>
-              <PersonAddIcon />
-              {isMobile? "" : "Add Staff"}
-            </Button>
+            {role === "Manager" &&
+              <Button
+                variant="contained"
+                size="small"
+                onClick={() => handleOpenItem("staff")}
+                sx={{
+                  height: '36px',
+                  padding: 0,
+                  paddingLeft: '15px',
+                  paddingRight: '15px',
+                  margin: '0',
+                  width: isMobile? '30px' : 'fit-content'
+                }}>
+                <PersonAddIcon />
+                {isMobile? "" : "Add Staff"}
+              </Button>
+            }
           </Stack>
 
           <Button variant="contained"
@@ -194,23 +257,34 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
         <TableContainer
           component={Paper}
           sx={{
-            minHeight: isMobile? 'calc(100vh - 90px)' : 'calc(100vh - 200px)',
-            maxHeight: isMobile? 'calc(100vh - 90px)' : 'calc(100vh - 200px)',
+            minHeight: isMobile? 'calc(100vh - 190px)' : 'calc(100vh - 200px)',
+            maxHeight: isMobile? 'calc(100vh - 190px)' : 'calc(100vh - 200px)',
             width: '100%',
             overflow: 'auto' }}>
           <Table aria-label="responsive table">
 
             <TableBody>
-              {data.map((product, index) => (
+              {itemData.map((product, index) => (
                 <TableRow hover key={index}>
                   <TableCell align="left">
+
+                    <Button variant="contained" sx={{
+                      backgroundColor: '#ce1b1b',
+                      minWidth: isMobile? '15px' : '40px',
+                      minHeight: isMobile? '15px' : '40px',
+                      padding: 0, marginRight: '10px'
+                    }}
+                      onClick={() => removeItem(index)}>
+                      <RemoveCircleIcon />
+                    </Button>
+
                     {product.Name}
                   </TableCell>
                   <TableCell align="right">
                     <IncrementField max={50}
                       value={product.Quantity.toString()}
                       setValue={(val) => (
-                        setData((prevData) => {
+                        setItemData((prevData) => {
                           const newData = [...prevData];
                           newData[index].Quantity = val;
                           return newData;
@@ -231,20 +305,22 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
         <Button
           variant="contained"
           size="small"
-          onClick={onSubmit}
+          onClick={onSubmitButtonClick}
           sx={{
             height: '36px',
             padding: 0,
+            paddingLeft: '15px',
+            paddingRight: '15px',
             margin: '0',
-            width: { xs: '120px', sm: '120px' }
+            width: 'fit-content'
           }}>
           {submitLabel}
         </Button>
       </Box>
       }
       <Dialog
-        open={open}
-        onClose={handleClose}
+        open={openItem}
+        onClose={handleCloseItem}
         fullWidth
         maxWidth="xs"
         PaperProps={{
@@ -259,17 +335,45 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
 
-            <SearchField
-                data={searchSuggestions}
-                onSuggestionPicked={handleSearchSuggestionClick}/>
-
-            <Stack direction="row" justifyContent="center">
-              <IncrementField normalSize max={50000}
-                value={currentProduct.Quantity}
-                setValue={(val) => setCurrentProduct({
-                    ...currentProduct,
-                    Quantity: val })} />
-            </Stack>
+            {dialogContent === "item" &&
+            <>
+              <SearchField
+                  data={productSuggestions}
+                  setValidity={setSearchFieldValidity}
+                  onSuggestionPicked={handleSearchSuggestionClick}/>
+              <Stack direction="row" justifyContent="center">
+                <IncrementField normalSize max={50000}
+                  value={currentProduct.Quantity}
+                  setValue={(val) => setCurrentProduct({
+                      ...currentProduct,
+                      Quantity: val })} />
+              </Stack>
+            </>
+            }
+            {dialogContent === "staff" &&
+    <TableContainer component={Paper}>
+      <Table>
+        <TableBody>
+          {staffList.map((staff: any, index) => (
+            <TableRow key={index} hover
+              onClick={() => {
+                setStaffList((prev: any) =>
+                  prev.map((s: any, i: number) =>
+                    i === index
+                      ? { ...s, Selected: !s.Selected }
+                      : s
+                  )
+                );
+              }}
+              sx={{ cursor: "pointer" }}
+            >
+              <TableCell><Checkbox checked={staff.Selected} /> {staff.LastName}, {staff.FirstName} {staff.MiddleInitial}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+            }
 
           </Stack>
         </DialogContent>
@@ -278,18 +382,36 @@ const StockMovementPage = ({display, data, setData, submitLabel, onSubmit, onRet
             sx={ useMediaQuery("(orientation: portrait)")?
               {margin: "0 auto"} :
               {
+                display: dialogContent === "item"? "visible" : "none",
                 position: "absolute",
                 left: "50%",
                 transform: "translateX(-50%)"
               }}
-            onClick={handleAdd} 
+            onClick={handleAddItem} 
             variant="contained" 
-            disabled={!currentProduct.Quantity}
+            disabled={!currentProduct.Quantity || searchFieldValidity === false}
           >
             Add Item
           </Button>
+          { role === "Manager" &&
           <Button
-            onClick={handleClose}
+            sx={
+              useMediaQuery("(orientation: portrait)")?
+              {margin: "0 auto"} :
+              {
+                display: dialogContent === "staff"? "visible" : "none",
+                position: "absolute",
+                left: "50%",
+                transform: "translateX(-50%)"
+              }}
+            onClick={handleAddStaff} 
+            variant="contained" 
+          >
+            Add Staff
+          </Button>}
+
+          <Button
+            onClick={handleCloseItem}
             color="inherit"
             sx={{ marginLeft: "auto" }}>
             Cancel

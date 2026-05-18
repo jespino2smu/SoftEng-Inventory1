@@ -1,19 +1,23 @@
 import { useState, useEffect } from 'react';
 import { 
   Box, Typography, Button,
-  Stack, 
+  Stack,
+  Dialog, DialogTitle, DialogContent, DialogActions, IconButton,
+  TextField, InputAdornment,
   useMediaQuery,
 } from '@mui/material';
 import {
   LocalShipping as Receive,
   ContentPaste as Inventory,
-  ExitToApp as Dispatch
+  ExitToApp as Dispatch,
+  Close
  } from '@mui/icons-material';
 
 import api from '../api/api';
 
 import StockMovementPage from './StockMovementPage';
 import type {Product} from '../types/Product';
+import AlertCards from '../components/AlertCards';
 
 type Movement = "None" | "Receive" | "Dispatch" | "Inventory";
 
@@ -23,7 +27,11 @@ type Movement = "None" | "Receive" | "Dispatch" | "Inventory";
 
 
 export const DashboardPage = () => {
+  const [displayAlertCards, setDisplayAlertCards] = useState<boolean>(true);
+
   const [stockMovement, setStockMovement] = useState<Movement>("None");
+
+  const [staff, setStaff] = useState<any[]>([]);
 
   const [receiveStocks, setReceiveStocks] = useState<Product[]>([]);
   const [dispatchStocks, setDispatchStocks] = useState<Product[]>([]);
@@ -53,7 +61,6 @@ export const DashboardPage = () => {
   async function getRole() {
     const response = await api.post('/users/role');
     setRole(response.data.role);
-    //alert(response.data.role);
   }
 
 
@@ -71,39 +78,77 @@ export const DashboardPage = () => {
 
 
   function onSubmit(movement: Movement) {
+    //alert(staff.length + " " + staff);
     if (movement === "Dispatch") {
       addActivity(movement, dispatchStocks);
-      setDispatchStocks([]);
       setDisplayDispatchStocks(false);
+      setDispatchStocks([]);
+      
+      setErrorDialogTitle("Stock Dispatched Successful");
+      setErrorDialogMessage("Stocks have been dispatched successfully.");
+      setOpen(true);
     } else if (movement === "Inventory") {
+      // let r = "";
+
+      // Object.keys(stockInventory).forEach((i) => {
+      //   const attr = stockInventory[i as keyof typeof stockInventory];
+
+      //   Object.keys(attr).forEach((key) => {
+      //     r += key + ": " + attr[key as keyof typeof attr] + "\n"
+      //   });
+
+      //   r += "\n";
+      // });
+
+      // alert(r);
       addActivity(movement, stockInventory);
       setDisplayStockInventory(false);
       setStockInventory([]);
+      
+      setErrorDialogTitle("Inventory Count Successful");
+      setErrorDialogMessage("Inventory submission successfully.");
+      setOpen(true);
+
     } else if (movement === "Receive") {
       addActivity(movement, receiveStocks);
       setDisplayReceiveStocks(false);
       setReceiveStocks([]);
+      
+      setErrorDialogTitle("Stock Received Successful");
+      setErrorDialogMessage("Stocks have been received successfully.");
+      setOpen(true);
     }
+    setStockMovement("None");
   }
 
   function onReturn() {
     // setLayoutVisibility?.(false);
+    setDisplayAlertCards(true);
+    
     setDisplayDispatchStocks(false);
     setDisplayStockInventory(false);
     setDisplayReceiveStocks(false);
+    
+    setDispatchStocks([]);
+    setStockInventory([]);
+    setReceiveStocks([]);
     setStockMovement("None");
   }
 
   async function addActivity(movement: string, stocks: Product[]) {
-      // const result = await post('/stocks/add-activity', {
-      //   movement: movement,
-      //   stocks: stocks,
-      // });
+      // let s = "Adding Staff to Activity: \n";
+      // for (let i = 0; i < staff.length; i++) {
+      //   s += staff + "\n";
+      // }
+      // alert(s)
 
       await api.post('/stocks/add-activity', {
         movement: movement,
         stocks: stocks,
+        staff: staff
       });
+
+      setStaff([]);
   }
 
   
@@ -111,6 +156,7 @@ export const DashboardPage = () => {
     switch (movement) {
       case "Dispatch":
         //setLayoutVisibility?.(true);
+        setDisplayAlertCards(false);
 
         setStockMovement(movement);
         setDisplayDispatchStocks(true);
@@ -119,6 +165,7 @@ export const DashboardPage = () => {
         break;
       case "Inventory":
         //setLayoutVisibility?.(true);
+        setDisplayAlertCards(false);
 
         setStockMovement(movement);
         setDisplayDispatchStocks(false);
@@ -127,6 +174,7 @@ export const DashboardPage = () => {
         break;
       case "Receive":
         //setLayoutVisibility?.(true);
+        setDisplayAlertCards(false);
 
         setStockMovement(movement);
         setDisplayDispatchStocks(false);
@@ -135,39 +183,87 @@ export const DashboardPage = () => {
         break;
       default:
         // setLayoutVisibility?.(false);
+        setDisplayAlertCards(true);
 
-        setStockMovement(movement);
         setDisplayDispatchStocks(false);
         setDisplayStockInventory(false);
         setDisplayReceiveStocks(false);
         break;
     }
   }
+
+  const [open, setOpen] = useState(false);
+
+  const [errorDialogTitle, setErrorDialogTitle] = useState("");
+  const [errorDialogMessage, setErrorDialogMessage] = useState("");
+
+  function showEmptyListError() {
+    setErrorDialogTitle("No Items to Submit");
+    setErrorDialogMessage("Must have an item.");
+    setOpen(true);
+  }
+
+  function showInvalidQuantityError(message: string) {
+    setErrorDialogTitle("Invalid Quantity");
+    setErrorDialogMessage(message);
+    setOpen(true);
+  }
   return (
     <>
-        {role === 'Manager' &&<StockMovementPage
+        <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
+          <DialogTitle sx={{ m: 0, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            {errorDialogTitle}
+          </DialogTitle>
+          <DialogContent>
+            <Typography variant="body2" sx={{ mt: 2, color: 'text.secondary' }}>
+              {errorDialogMessage}
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ width: "100%" }}>
+            <Button onClick={() => {
+              setOpen(false)
+            }}>
+              Okay
+            </Button>
+            </DialogActions>
+        </Dialog>
+
+        {role === 'Manager' && displayAlertCards && <AlertCards />}
+        {role === 'Manager' && <StockMovementPage
           display={displayReceiveStocks}
+          role={role}
           submitLabel='Receive'
-          data={receiveStocks}
-          setData={setReceiveStocks}
+          itemData={receiveStocks}
+          setItemData={setReceiveStocks}
+          setStaffData={setStaff}
           onSubmit={() => onSubmit("Receive")}
-          onReturn={onReturn} />}
+          onReturn={onReturn}
+          onEmptyList={showEmptyListError}
+          onInvalidQuantity={showInvalidQuantityError} />}
           
         <StockMovementPage
           display={displayStockInventory}
+          role={role}
           submitLabel='Confirm Inventory'
-          data={stockInventory}
-          setData={setStockInventory}
+          itemData={stockInventory}
+          setItemData={setStockInventory}
+          setStaffData={setStaff}
           onSubmit={() => onSubmit("Inventory")}
-          onReturn={onReturn} />
+          onReturn={onReturn}
+          onEmptyList={showEmptyListError}
+          onInvalidQuantity={showInvalidQuantityError} />
 
         {role === 'Manager' &&<StockMovementPage
           display={displayDispatchStocks}
+          role={role}
           submitLabel='Dispatch'
-          data={dispatchStocks}
-          setData={setDispatchStocks}
+          itemData={dispatchStocks}
+          setItemData={setDispatchStocks}
+          setStaffData={setStaff}
           onSubmit={() => onSubmit("Dispatch")}
-          onReturn={onReturn} />}
+          onReturn={onReturn}
+          onEmptyList={showEmptyListError}
+          onInvalidQuantity={showInvalidQuantityError} />}
 
         <Box sx={{ 
         display: 'flex', 
