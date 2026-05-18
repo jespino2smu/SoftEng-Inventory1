@@ -10,6 +10,6 @@ export default defineConfig({
   ],
 
   server: {
-    allowedHosts: ['rebecca-sponsored-southern-ceramic.trycloudflare.com']
+    allowedHosts: ['sciences-daniel-apartments-jewel.trycloudflare.com']
   }
 })
