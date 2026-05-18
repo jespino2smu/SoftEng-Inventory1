@@ -210,9 +210,10 @@ DELIMITER ;
 
 /* =================================================== */
 
+DELIMITER //
 CREATE PROCEDURE TrackStaff(IN id INT)
 BEGIN
-	SELECT A.ActivityId, ActivityType, Date, ProductName, PreviousValue, Quantity
+	SELECT A.ActivityId, ActivityType, Date, ProductName, PreviousValue, Quantity, HasDiscrepancy
 	FROM handling_staff AS S
 	LEFT JOIN stock_activity AS A
 	ON S.ActivityId = A.ActivityId
@@ -220,11 +221,11 @@ BEGIN
 	ON HP.ActivityId = A.ActivityId
 	LEFT JOIN product AS P
 	ON P.ProductId = HP.ProductId
-	WHERE StaffId= 2;
+	WHERE StaffId=id
 END //
 DELIMITER ;
 
--- CALL TrackStaff(2);
+-- 	CALL TrackStaff(2);
 
 /* ================ */
 
